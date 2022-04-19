@@ -1,0 +1,26 @@
+public final class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardConfiguration {
+	public fun <init> (Ljava/lang/String;ZZZLkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Ljava/lang/String;ZZZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getArtifacts ()Z
+	public final fun getConfigurationName ()Ljava/lang/String;
+	public final fun getModules ()Z
+	public final fun getTree ()Z
+	public final fun isAllowed ()Lkotlin/jvm/functions/Function1;
+	public final fun setAllowed (Lkotlin/jvm/functions/Function1;)V
+	public final fun setArtifacts (Z)V
+	public final fun setModules (Z)V
+	public final fun setTree (Z)V
+}
+
+public final class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPlugin : org/gradle/api/Plugin {
+	public fun <init> ()V
+	public synthetic fun apply (Ljava/lang/Object;)V
+	public fun apply (Lorg/gradle/api/Project;)V
+}
+
+public class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPluginExtension {
+	public fun <init> ()V
+	public final fun configuration (Ljava/lang/String;)V
+	public final fun configuration (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+}
+

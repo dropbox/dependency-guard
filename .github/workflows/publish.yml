@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Generate cache key
+        run: .github/scripts/checksum.sh checksum.txt
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('checksum.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: Install JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 11
+          
+      - name: Dependency Guard
+        run: ./gradlew dependencyGuard --no-daemon --stacktrace
+
+      - name: Test Plugin
+        run: ./gradlew -p dependency-guard-gradle-plugin clean check apiCheck --no-daemon --stacktrace
+
+      - name: (Fail-only) Bundle test reports
+        if: failure()
+        run: find . -type d -name 'reports' | zip -@ -r build-reports.zip
+
+      - name: (Fail-only) Upload the build report
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: error-report
+          path: build-reports.zip
+
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'dropbox/dependency-guard' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
+      - name: Upload Snapshot
+        run: ./gradlew -p dependency-guard-gradle-plugin clean publish --no-daemon --no-parallel --no-configuration-cache --stacktrace
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+
+      - name: Retrieve Version
+        run: echo "VERSION_NAME=$(./gradlew -q -p dependency-guard-gradle-plugin printVersionName)" >> $GITHUB_ENV
+
+      - name: Publish release (main only)
+        run: ./gradlew -p dependency-guard-gradle-plugin closeAndReleaseRepository --no-daemon --no-parallel
+        if: success() && !endsWith(env.VERSION_NAME, '-SNAPSHOT')
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
