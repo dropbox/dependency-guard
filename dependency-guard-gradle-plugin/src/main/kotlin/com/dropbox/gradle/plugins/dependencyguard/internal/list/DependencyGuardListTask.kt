@@ -8,9 +8,9 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListRe
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
-import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.initialization.dsl.ScriptHandler
@@ -26,7 +26,7 @@ internal open class DependencyGuardListTask : DefaultTask() {
 
     private var shouldBaseline: Boolean = false
 
-    private val configurations: MutableList<DependencyGuardConfiguration> get() = extension.configurations
+    private val dependencyGuardConfigurations: MutableList<DependencyGuardConfiguration> get() = extension.configurations
 
     private fun generateReport(
         dependencyGuardConfiguration: DependencyGuardConfiguration
@@ -60,19 +60,28 @@ internal open class DependencyGuardListTask : DefaultTask() {
     internal fun execute() {
         ConfigurationValidators.validateConfigurationsAreAvailable(
             target = project,
-            configurationNames = configurations.map { it.configurationName }
+            configurationNames = dependencyGuardConfigurations.map { it.configurationName }
         )
 
         val dependencyChangesDetectedInConfigurations = mutableListOf<String>()
         val reports = mutableListOf<DependencyGuardReportData>()
-        configurations.forEach { dependencyGuardConfig ->
+        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = generateReport(dependencyGuardConfig)
-
-            // --- All Dependencies ---
-            if (writeListReport(dependencyGuardConfig, report)) {
-                dependencyChangesDetectedInConfigurations.add(report.configurationName)
-            }
             reports.add(report)
+        }
+
+        val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
+        if (reportsWithDisallowedDependencies.isNotEmpty()) {
+            throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
+        }
+
+        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
+            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
+            report?.let {
+                if (writeListReport(dependencyGuardConfig, report)) {
+                    dependencyChangesDetectedInConfigurations.add(report.configurationName)
+                }
+            }
         }
 
         if (dependencyChangesDetectedInConfigurations.isNotEmpty()) {
@@ -80,11 +89,6 @@ internal open class DependencyGuardListTask : DefaultTask() {
                 DependencyGuardReportType.ALL,
                 dependencyChangesDetectedInConfigurations
             )
-        }
-
-        val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
-        if (reportsWithDisallowedDependencies.isNotEmpty()) {
-            throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
         }
     }
 
@@ -115,12 +119,9 @@ internal open class DependencyGuardListTask : DefaultTask() {
     }
 
     private fun throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
-        val errorMessage = StringBuilder()
-
-        reportsWithDisallowedDependencies.forEach { report ->
-            val disallowed = report.disallowed
-
-            errorMessage.apply {
+        val errorMessage = StringBuilder().apply {
+            reportsWithDisallowedDependencies.forEach { report ->
+                val disallowed = report.disallowed
                 appendLine(
                     """Disallowed Dependencies found in ${project.path} for the configuration "${report.configurationName}" """
                 )
@@ -128,15 +129,12 @@ internal open class DependencyGuardListTask : DefaultTask() {
                     appendLine("\"${it.name}\",")
                 }
                 appendLine()
-                appendLine("These dependencies are transitively included and must be removed based on current rules.")
-                appendLine()
             }
-        }
+            appendLine("These dependencies are transitively included and must be removed based on the configured 'isAllowed' rules.")
+            appendLine()
+        }.toString()
 
-        ColorTerminal.printlnColor(
-            ColorTerminal.ANSI_RED,
-            errorMessage.toString()
-        )
+        throw GradleException(errorMessage)
     }
 
     private fun throwErrorAboutDetectedChanges(

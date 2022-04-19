@@ -2,6 +2,12 @@
 
 A Gradle plugin that helps you **guard against unintentional dependency changes**.
 
+---
+
+### Example of Transitive Dependency Changes
+A small single version bump of `androidx.activity` from `1.3.1` -> `1.4.0` causes many libraries to transitively update.
+![](docs/images/002-bump-version-change-detected.gif)
+
 ## Real World Use Cases & How Dependency Guard Can Help
 * Accidentally shipping a testing dependency to production because `implementation` was used instead of `testImplementation` - [@handstandsam](https://twitter.com/joreilly)
   * Dependency Guard has List and Tree baseline formats that can compared against to identify changes. If changes occur, and they are expected, you can re-baseline.
@@ -10,6 +16,61 @@ A Gradle plugin that helps you **guard against unintentional dependency changes*
 * After adding `Ktor 2.0.0`, it transitively upgraded to `Kotlin 1.6.20` which caused incompatibilities with `Jetpack Compose 1.1.1` which requires `Kotlin 1.6.10` - [@joreilly](https://twitter.com/joreilly)
   * During large upgrades it is important to see how a single version bump will impact the rest of your application.
 * Upgrading to the Android Gradle Plugin transitively downgraded protobuf plugin which caused issues - [@AutonomousApps](https://twitter.com/AutonomousApps)
+
+
+## Step 1: Adding The Dependency Guard Gradle Plugin and Baselining
+```kotlin
+// sample/app/build.gradle.kts
+plugins {
+  id("com.dropbox.dependency-guard")
+}
+```
+
+Run `./gradle dependencyGuard` to see a list of available configuration(s) for this Gradle module.  
+
+We suggest your release runtime configuration that you ship to production.  In an Android Application with no flavors, that would be:
+```kotlin
+// sample/app/build.gradle.kts
+dependencyGuard {
+    // All dependencies included in Production Release APK
+    configuration("releaseRuntimeClasspath") 
+}
+```
+<sub><sup>(If plugin could not be found, checkout the "Adding to the Buildscript Classpath" section below)<sub><sup>
+
+![](docs/images/001-adding-plugin-and-creating-baseline.gif)
+
+## Detecting Changes
+
+Bump Version and Detect Change
+![](docs/images/002-bump-version-change-detected.gif)
+
+## Rebaselining
+
+Rebaseline to Accept Change
+![](docs/images/003-rebaseline.gif)
+
+
+## Allow Rules for Dependencies
+
+Allowed Dependencies
+![](docs/images/007-filter-dependencies.gif)
+
+## Tree Format (Optional)
+
+### Enabling Tree Format
+
+Enable Dependency Tree Format
+![](docs/images/004-tree-config-and-baseline.gif)
+
+### Detecting Changes in Tree Format
+Bump Version and Detect Tree Diff
+![](docs/images/005-tree-version-change-detected.gif)
+
+### Rebaselining Tree Format
+Rebaseline to Accept Change
+![](docs/images/006-tree-rebaseline.gif)
+
 
 ## Why Was Dependency Guard Built?
 As platform engineers, we do a lot of library upgrades, and needed insight into how dependencies were changing over time.  Any small change can have a large impact. On large teams, it's not possible to track all dependency changes in a practical way, so we needed tooling to help.  This is a tool that surfaces these changes to any engineer making dependency changes, and allows them to re-baseline if it's intentional.  This provides us with historical reference on when dependencies (including transitive) are changed for a given configuration.
@@ -65,7 +126,7 @@ dependencies/*.tree.txt
 The list format is generated at `dependencies.${configurationName}.txt`.  By default it contains both a list of modules and 3rd party artifacts.  You can customize this configuration if you choose with the following configuration:
 
 
-sample/app/dependency-guard/runtimeClasspath.txt
+sample/app/dependencies/runtimeClasspath.txt
 ```
 :sample:module1
 :sample:module2
@@ -113,16 +174,6 @@ A baseline file is created for each build configuration you want to guard.
 
 If the dependencies do change, you'll get easy to read warnings to help you visualize the differences, and accept them by re-baselining.  This new baseline will be visible in your Git history to help understand when dependencies changed (including transitive).
 
-### Usage
-Apply the Dependency Guard plugin to any module using the following configuration.
-
-```groovy
-plugins {
-  id("com.dropbox.dependency-guard")
-}
-
-dependencyGuard {}
-```
 
 ```kotlin
 dependencyGuard {
@@ -168,26 +219,6 @@ dependencyGuard {
 ```
 
 
-### Setup
-
-Be sure to include the Dependency Guard plugin to your buildscript classpath, just like you do with the Kotlin Gradle Plugin or Android Gradle Plugin.
-
-```groovy
-// build.gradle(.kts)
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-        // SNAPSHOT Versions
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
-    }
-    dependencies {
-        classpath("com.dropbox.dependency-guard:dependency-guard:0.1.0-SNAPSHOT")
-    }
-}
-```
-
 ## Suggested Workflow
 
 The Dependency Guard plugin adds a few tasks for you to use in your Gradle Builds.  Your continuous integration environment would run the `dependencyGuard` task to ensure things did not change, and require developers to re-baseline using the `dependencyGuardBaseline` tasks when changes were intentional.
@@ -208,6 +239,34 @@ This task overwrites the dependencies in the `dependency-guard` directory in you
 
 Baseline files are created in the "dependency-guard" folder in your module.  The following reports are created for the `:sample:app` module by running `./gradlew :sample:app:dependencyGuardBaseline`
 
+
+
+### Setup
+
+Be sure to include the Dependency Guard plugin to your buildscript classpath, just like you do with the Kotlin Gradle Plugin or Android Gradle Plugin.
+
+
+## Adding to the Buildscript Classpath
+
+Snapshot versions are under development and change, but can be used by adding in the snapshot repository
+```groovy
+// Root build.gradle
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+        // SNAPSHOT Versions of Dependency Guard
+        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
+    }
+    dependencies {
+        classpath("com.dropbox.dependency-guard:dependency-guard:0.1.0-SNAPSHOT")
+    }
+}
+```
+
+### SNAPSHOT Repository
+Snapshots can be found at `https://s01.oss.sonatype.org/content/repositories/snapshots`.
 
 ## License
 
