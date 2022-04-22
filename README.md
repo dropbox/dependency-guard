@@ -2,13 +2,30 @@
 
 A Gradle plugin that helps you **guard against unintentional dependency changes**.
 
----
+## Surface Transitive Dependency Changes
+Comparison to a baseline occurs whenever you run the `dependencyGuard` Gradle task.
 
-### Example of Transitive Dependency Changes
 A small single version bump of `androidx.activity` from `1.3.1` -> `1.4.0` causes many libraries to transitively update.
+
 ![](docs/images/002-bump-version-change-detected.gif)
 
-## Real World Use Cases & How Dependency Guard Can Help
+## Custom Rules for Allowed Dependencies
+For a given configuration, you may never want `junit` to be shipped.  You can prevent this by modifying the `isAllowed` rule to return `!it.contains("junit")` for your situation.
+
+![](docs/images/007-filter-dependencies.gif)
+
+
+## Why Was Dependency Guard Built?
+As platform engineers, we do a lot of library upgrades, and needed insight into how dependencies were changing over time.  Any small change can have a large impact. On large teams, it's not possible to track all dependency changes in a practical way, so we needed tooling to help.  This is a tool that surfaces these changes to any engineer making dependency changes, and allows them to re-baseline if it's intentional.  This provides us with historical reference on when dependencies (including transitive) are changed for a given configuration.
+
+### Goals:
+- Surface transitive and non-transitive dependencies changes for our production build configurations.  This helps during version bumps and when new libraries are added.
+- Provide the developer with the ability to easily accept changes as needed.
+- Add deny-listing for production build configurations to explicitly block some dependencies from production.
+- Include a record of the change in Git when their code is merged to easily diagnose/debug crashes in the future.
+- Be deterministic.  De-duplicate entries, and order alphabetically.
+
+## Real World Issues Which Dependency Guard Addresses
 * Accidentally shipping a testing dependency to production because `implementation` was used instead of `testImplementation` - [@handstandsam](https://twitter.com/joreilly)
   * Dependency Guard has List and Tree baseline formats that can compared against to identify changes. If changes occur, and they are expected, you can re-baseline.
 * Dependency versions were transitively upgraded which worked fine typically, but caused a runtime crash later that was hard to figure out why it happened.
@@ -17,7 +34,7 @@ A small single version bump of `androidx.activity` from `1.3.1` -> `1.4.0` cause
   * During large upgrades it is important to see how a single version bump will impact the rest of your application.
 * Upgrading to the Android Gradle Plugin transitively downgraded protobuf plugin which caused issues - [@AutonomousApps](https://twitter.com/AutonomousApps)
 
-
+# Setup and Configuration
 ## Step 1: Adding The Dependency Guard Gradle Plugin and Baselining
 ```kotlin
 // sample/app/build.gradle.kts
@@ -26,9 +43,13 @@ plugins {
 }
 ```
 
-Run `./gradle dependencyGuard` to see a list of available configuration(s) for this Gradle module.  
+## Step 2: Run `./gradle dependencyGuard` and Configure
+This will show a list of available configuration(s) for this Gradle module. 
 
-We suggest your release runtime configuration that you ship to production.  In an Android Application with no flavors, that would be:
+You can choose the configurations you want to monitor.  
+
+We suggest monitoring your release configuration to know what is included in production builds. You can choose to monitor any classpath configuration with Dependency Guard.
+
 ```kotlin
 // sample/app/build.gradle.kts
 dependencyGuard {
@@ -36,59 +57,78 @@ dependencyGuard {
     configuration("releaseRuntimeClasspath") 
 }
 ```
-<sub><sup>(If plugin could not be found, checkout the "Adding to the Buildscript Classpath" section below)<sub><sup>
+NOTE: Checkout the "[Adding to the Buildscript Classpath](#adding-to-the-buildscript-classpath)" section below if the plugin can't be resolved.
 
 ![](docs/images/001-adding-plugin-and-creating-baseline.gif)
 
-## Detecting Changes
+
+## Step 3: Run `./gradlew dependencyGuard` to Detect Changes
+
+It's suggested to run in your CI or pre-commit hooks to detect these changes.  If this task is not run, then you aren't getting the full benefit of this plugin.
 
 Bump Version and Detect Change
 ![](docs/images/002-bump-version-change-detected.gif)
 
-## Rebaselining
+## Step 4: Rebaselining to Accept Changes
+
+If any dependencies have changed, you will be provided with the `./gradlew dependencyGuardBaseline` task to update the baseline and intentionally accept these new changes.
 
 Rebaseline to Accept Change
 ![](docs/images/003-rebaseline.gif)
 
+# Additional Configuration Options
 
-## Allow Rules for Dependencies
+## Allow Rules for Dependencies (Optional)
 
-Allowed Dependencies
+If you have explicit test or debugging dependencies you never want to ship, you can create rules for them here.
+
+```kotlin
+dependencyGuard {
+    configuration("releaseRuntimeClasspath") {
+        isAllowed = {
+            // Disallow dependencies with a name containing "test"
+            !it.contains("junit")
+        }
+    }
+}
+```
+
 ![](docs/images/007-filter-dependencies.gif)
+
+## Configuring Your Dependency Baseline (Optional)
+By default, Dependency Guard tracks modules and artifacts in a list format is generated at `dependencies/${configurationName}.txt`.
+```
+:sample:module1
+:sample:module2
+org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib:1.6.10
+org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.2
+org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2
+org.jetbrains:annotations:13.0
+```
+
+You can customize choose to not track modules or artifacts:
+```kotlin
+dependencyGuard {
+  configuration("releaseRuntimeClasspath") {
+    // What is included in the list report
+    modules = true // Defaults to true
+    artifacts = true // Defaults to true
+  }
+}
+```
 
 ## Tree Format (Optional)
 
-### Enabling Tree Format
-
-Enable Dependency Tree Format
-![](docs/images/004-tree-config-and-baseline.gif)
-
-### Detecting Changes in Tree Format
-Bump Version and Detect Tree Diff
-![](docs/images/005-tree-version-change-detected.gif)
-
-### Rebaselining Tree Format
-Rebaseline to Accept Change
-![](docs/images/006-tree-rebaseline.gif)
-
-
-## Why Was Dependency Guard Built?
-As platform engineers, we do a lot of library upgrades, and needed insight into how dependencies were changing over time.  Any small change can have a large impact. On large teams, it's not possible to track all dependency changes in a practical way, so we needed tooling to help.  This is a tool that surfaces these changes to any engineer making dependency changes, and allows them to re-baseline if it's intentional.  This provides us with historical reference on when dependencies (including transitive) are changed for a given configuration.
-
-### Which Configurations Should be Guarded?
-* Production App Configurations (what you ship)
-* Production Build Configurations (what you use to build your app)
-
-Changes to either one of these can change your resulting application.
-
-### Tree Format
-Dependency Guard started with just finding a way to easily create leverage `dependency-tree-diff` of a specific configuration of the `:dependencies` task from Gradle.  
+The builtin Dependencies task from Gradle is `:dependencies`.  The tree format support for Dependency Guard leverages this under the hood and targets it for a specific configuration.
 
 The [`dependency-tree-diff` library](https://github.com/JakeWharton/dependency-tree-diff) in extremely helpful tool, but is impractical for many projects in Continuous Integration since it has a lot of custom setup to enable it. ([related discussion](https://github.com/JakeWharton/dependency-tree-diff/discussions/8)).  `dependency-tree-diff`'s diffing logic is actually used by Dependency Guard to highlight changes in trees.
 
 The tree format proved to be very helpful, but as we looked at it from a daily usage standpoint, we found that the tree format created more noise than signal.  It's super helpful to use for development, but we wouldn't recommend storing the tree format in Git, especially in large projects as it gets noisy, and it becomes ignored.  In brainstorming with [@joshfein](https://twitter.com/joshfein), it seemed like a simple orded, de-duplicated list of dependencies were better for storing in CI.
 
-`./gradlew :sample:app:dependencyGuard` generates `sample/app/dependencies/releaseRuntimeClasspath.tree.txt` 
+`dependencies/releaseRuntimeClasspath.tree.txt`
 ```
 
 ------------------------------------------------------------
@@ -116,53 +156,32 @@ A web-based, searchable dependency report is available by adding the --scan opti
 
 ```
 
-If you want to be able to use the tree format for development and debugging, you can leave it enabled, but add it to your `.gitignore` file so that it doesn't get checked into Git.
+### Enabling Tree Format
+Enable the tree format for a configuration with the following option:
+```kotlin
+dependencyGuard {
+  configuration("releaseRuntimeClasspath") {
+    tree = true // Enable Tree Format
+  }
+}
 ```
-//.gitignore
-dependencies/*.tree.txt
-```
+### Creating a Tree Format Baseline
+![](docs/images/004-tree-config-and-baseline.gif)
 
-### List Format
-The list format is generated at `dependencies.${configurationName}.txt`.  By default it contains both a list of modules and 3rd party artifacts.  You can customize this configuration if you choose with the following configuration:
+### Detecting Changes in Tree Format
+![](docs/images/005-tree-version-change-detected.gif)
 
-
-sample/app/dependencies/runtimeClasspath.txt
-```
-:sample:module1
-:sample:module2
-org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib:1.6.10
-org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.2
-org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2
-org.jetbrains:annotations:13.0
-```
+### Rebaselining Tree Format
+![](docs/images/006-tree-rebaseline.gif)
 
 
-### Filtering for Allowed Dependencies
+# Additional Information
 
+### Which Configurations Should be Guarded?
+* Production App Configurations (what you ship)
+* Production Build Configurations (what you use to build your app)
 
-
-
-The tree diffs are super helpful to debug with and can be checked into Git, but on larger projects it gets VERY noisy and the list format works must better.  If you still want to enable it, you can add the tree format to your `.gitignore` so you can still use it, but not have it checked into Git.
-
-  
-## How to Use Dependency Guard
-
-
-to be able t For a given module and configuration, a baseline will be saved at `dependencies/${configurationName}.txt`
-#### List Format Baseline
-
-
-
-### Goals:
-- Surface transitive and non-transitive dependencies changes for our production build configurations.  This helps during version bumps and when new libraries are added.
-- Provide the developer with the ability to easily accept changes as needed.
-- Add deny-listing for production build configurations to explicitly block some dependencies from production.
-- Include a record of the change in Git when their code is merged to easily diagnose/debug crashes in the future.
-- Be deterministic.  De-duplicate entries, and order alphabetically.
-
+Changes to either one of these can change your resulting application.
 
 ### How Does Dependency Guard Work?
 
@@ -174,6 +193,8 @@ A baseline file is created for each build configuration you want to guard.
 
 If the dependencies do change, you'll get easy to read warnings to help you visualize the differences, and accept them by re-baselining.  This new baseline will be visible in your Git history to help understand when dependencies changed (including transitive).
 
+
+## Full Configuration Options
 
 ```kotlin
 dependencyGuard {
@@ -193,37 +214,11 @@ dependencyGuard {
 }
 ```
 
-If you don't know what configurations are available, just run the `dependencyGuard` task with no configurations provided, and you will get a warning with available configurations for this module:
-```
-> Error: No configurations provided to Dependency Guard Plugin.
- Here are some valid configurations you could use.
- 
- dependencyGuard {
-   configuration("compileClasspath")
-   configuration("runtimeClasspath")
-   configuration("testCompileClasspath")
-   configuration("testRuntimeClasspath")
- }
-```
-
-Full configuration:
-```groovy
-// module/build.gradle(.kts)
-plugins {
-  id("com.dropbox.dependency-guard")
-}
-
-dependencyGuard {
-    configuration("runtimeClasspath")
-}
-```
-
-
-## Suggested Workflow
+## Suggested Workflows
 
 The Dependency Guard plugin adds a few tasks for you to use in your Gradle Builds.  Your continuous integration environment would run the `dependencyGuard` task to ensure things did not change, and require developers to re-baseline using the `dependencyGuardBaseline` tasks when changes were intentional.
 
-## Tasks
+# Gradle Tasks added by Dependency Guard
 
 ### `dependencyGuard`
 
@@ -238,13 +233,6 @@ This task overwrites the dependencies in the `dependency-guard` directory in you
 ## Baseline Files
 
 Baseline files are created in the "dependency-guard" folder in your module.  The following reports are created for the `:sample:app` module by running `./gradlew :sample:app:dependencyGuardBaseline`
-
-
-
-### Setup
-
-Be sure to include the Dependency Guard plugin to your buildscript classpath, just like you do with the Kotlin Gradle Plugin or Android Gradle Plugin.
-
 
 ## Adding to the Buildscript Classpath
 
@@ -264,9 +252,6 @@ buildscript {
     }
 }
 ```
-
-### SNAPSHOT Repository
-Snapshots can be found at `https://s01.oss.sonatype.org/content/repositories/snapshots`.
 
 ## License
 
