@@ -2,7 +2,8 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 
 import com.dropbox.gradle.plugins.dependencyguard.models.ArtifactDependency
 import com.google.common.truth.Truth.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
+
 import java.io.File
 
 internal class DependencyGuardReportDataTest {

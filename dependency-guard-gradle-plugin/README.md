@@ -17,7 +17,7 @@ To generate out dependency trees as well, use the following configuration
 ```
 dependencyGuard {
     configuration("normalReleaseRuntimeClasspath") {
-        it.tree = true
+        tree = true
     }
 }
 ```
