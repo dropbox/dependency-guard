@@ -1,5 +1,7 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
+import org.gradle.api.Action
+
 /**
  * Extension for [DependencyGuardPlugin] which leverages [DependencyGuardConfiguration]
  */
@@ -16,13 +18,14 @@ public open class DependencyGuardPluginExtension {
      *
      * dependencyGuard {
      *   configuration("normalReleaseRuntimeClasspath") {
-     *     it.artifactReport = true
-     *     it.moduleReport = false
+     *     artifactReport = true
+     *     moduleReport = false
      *   }
      * }
      */
-    public fun configuration(name: String, config: DependencyGuardConfiguration.() -> Unit) {
-        val configuration = DependencyGuardConfiguration(name).apply(config)
+    public fun configuration(name: String, config: Action<DependencyGuardConfiguration>) {
+        val configuration = DependencyGuardConfiguration(name)
+        config.execute(configuration)
         configurations.add(configuration)
     }
 }
