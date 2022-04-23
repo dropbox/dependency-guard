@@ -9,17 +9,13 @@ plugins {
   alias(libs.plugins.binaryCompatibilityValidator)
 }
 
-buildscript {
-  repositories {
-    mavenCentral()
-    gradlePluginPortal()
-  }
-}
-
 repositories {
   mavenCentral()
   gradlePluginPortal()
 }
+
+val VERSION_NAME: String by project
+version = VERSION_NAME
 
 tasks.withType<KotlinCompile>().configureEach {
   kotlinOptions {
@@ -67,15 +63,65 @@ dependencies {
   compileOnly(gradleApi())
   implementation(platform(libs.kotlin.bom))
   implementation(libs.kotlin.plugin)
+}
 
-  testImplementation(gradleTestKit())
-  testImplementation(libs.junit)
-  testImplementation(libs.truth)
+// Ensure build/gradleTest doesn't grow without bound when tests sometimes fail to clean up
+// after themselves.
+val deleteOldGradleTests = tasks.register<Delete>("deleteOldGradleTests") {
+  delete(layout.buildDirectory.file("gradleTest"))
+}
+
+// https://docs.gradle.org/current/userguide/jvm_test_suite_plugin.html
+@Suppress("UnstableApiUsage") // Test Suites is an @Incubating feature
+testing {
+  suites {
+    // Configure the default test suite
+    val test by getting(JvmTestSuite::class) {
+      // This is the default
+      useJUnitJupiter()
+      dependencies {
+        // Equivalent to `testImplementation ...` in the top-level dependencies block
+        implementation(libs.truth)
+      }
+    }
+
+    // Create a new test suite
+    val gradleTest by registering(JvmTestSuite::class) {
+      useJUnitJupiter()
+      dependencies {
+        // gradleTest test suite depends on the production code in tests
+        implementation(project)
+        implementation(libs.truth)
+      }
+
+      targets {
+        all {
+          testTask.configure {
+            shouldRunAfter(test)
+            dependsOn(deleteOldGradleTests)
+
+            systemProperty("pluginVersion", version)
+
+            maxParallelForks = Runtime.getRuntime().availableProcessors() / 2
+            beforeTest(closureOf<TestDescriptor> {
+              logger.lifecycle("Running test: $this")
+            })
+          }
+        }
+      }
+    }
+  }
+}
+
+gradlePlugin.testSourceSets(sourceSets.named("gradleTest").get())
+
+@Suppress("UnstableApiUsage") // Test Suites is an @Incubating feature
+tasks.named("check") {
+  dependsOn(testing.suites.named("gradleTest"))
 }
 
 tasks.register("printVersionName") {
   doLast {
-    val VERSION_NAME: String by project
     println(VERSION_NAME)
   }
 }
