@@ -21,6 +21,6 @@ public final class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPlu
 public class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPluginExtension {
 	public fun <init> ()V
 	public final fun configuration (Ljava/lang/String;)V
-	public final fun configuration (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public final fun configuration (Ljava/lang/String;Lorg/gradle/api/Action;)V
 }
 
