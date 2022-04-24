@@ -30,7 +30,6 @@ class SimpleProject : AbstractProject() {
         }
         plugins {
           id 'com.gradle.enterprise' version '3.10'
-          //id 'com.dropbox.dependency-guard' version '$pluginVersion'
         }
       }
       
