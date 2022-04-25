@@ -1,14 +1,10 @@
 package com.dropbox.gradle.plugins.dependencyguard.fixture
 
-import java.nio.file.Files
+import com.dropbox.gradle.plugins.dependencyguard.util.createDirectories
+import com.dropbox.gradle.plugins.dependencyguard.util.writeText
 import java.nio.file.Path
 
 class SimpleProject : AbstractProject() {
-
-  companion object {
-    // See build.gradle
-    private val pluginVersion = System.getProperty("pluginVersion").toString()
-  }
 
   private val gradlePropertiesFile = projectDir.resolve("gradle.properties")
   private val settingsFile = projectDir.resolve("settings.gradle")
@@ -28,26 +24,11 @@ class SimpleProject : AbstractProject() {
           gradlePluginPortal()
           mavenCentral()
         }
-        plugins {
-          id 'com.gradle.enterprise' version '3.10'
-        }
-      }
-      
-      plugins {
-        id 'com.gradle.enterprise'
       }
       
       dependencyResolutionManagement {
         repositories {
           mavenCentral()
-        }
-      }
-      
-      gradleEnterprise {
-        buildScan {
-          publishAlways()
-          termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-          termsOfServiceAgree = 'yes'
         }
       }
       
@@ -77,19 +58,13 @@ class SimpleProject : AbstractProject() {
       }
       
       dependencyGuard {
-        configuration('compileClasspath')
+        configuration('compileClasspath') {
+          tree = true
+        }
       }
       """.trimIndent()
     )
 
     return lib
-  }
-
-  private fun Path.writeText(content: String) {
-    Files.write(this, content.toByteArray())
-  }
-
-  private fun Path.createDirectories(): Path {
-    return Files.createDirectories(this)
   }
 }
