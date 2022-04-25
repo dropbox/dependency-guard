@@ -1,9 +1,9 @@
-public final class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardConfiguration {
-	public fun <init> (Ljava/lang/String;ZZZLkotlin/jvm/functions/Function1;)V
-	public synthetic fun <init> (Ljava/lang/String;ZZZLkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardConfiguration : org/gradle/api/Named {
+	public fun <init> (Ljava/lang/String;)V
 	public final fun getArtifacts ()Z
 	public final fun getConfigurationName ()Ljava/lang/String;
 	public final fun getModules ()Z
+	public fun getName ()Ljava/lang/String;
 	public final fun getTree ()Z
 	public final fun isAllowed ()Lkotlin/jvm/functions/Function1;
 	public final fun setAllowed (Lkotlin/jvm/functions/Function1;)V
@@ -19,8 +19,16 @@ public final class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPlu
 }
 
 public class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardPluginExtension {
-	public fun <init> ()V
+	public fun <init> (Lorg/gradle/api/model/ObjectFactory;)V
 	public final fun configuration (Ljava/lang/String;)V
 	public final fun configuration (Ljava/lang/String;Lorg/gradle/api/Action;)V
+}
+
+public abstract class com/dropbox/gradle/plugins/dependencyguard/internal/list/DependencyGuardListTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public abstract fun getAvailableConfigurations ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getForRootProject ()Lorg/gradle/api/provider/Property;
+	public abstract fun getMonitoredConfigurations ()Lorg/gradle/api/provider/ListProperty;
+	public abstract fun getShouldBaseline ()Lorg/gradle/api/provider/Property;
 }
 
