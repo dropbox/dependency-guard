@@ -36,7 +36,7 @@ jobs:
         run: ./gradlew dependencyGuard --no-daemon --stacktrace
 
       - name: Test Plugin
-        run: ./gradlew -p dependency-guard-gradle-plugin clean check apiCheck --no-daemon --stacktrace
+        run: ./gradlew -p dependency-guard clean check apiCheck --no-daemon --stacktrace
 
       - name: (Fail-only) Bundle test reports
         if: failure()
@@ -64,7 +64,7 @@ jobs:
           java-version: 11
 
       - name: Upload Snapshot
-        run: ./gradlew -p dependency-guard-gradle-plugin clean publish --no-daemon --no-parallel --no-configuration-cache --stacktrace
+        run: ./gradlew -p dependency-guard clean publish --no-daemon --no-parallel --no-configuration-cache --stacktrace
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
@@ -72,10 +72,10 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Retrieve Version
-        run: echo "VERSION_NAME=$(./gradlew -q -p dependency-guard-gradle-plugin printVersionName)" >> $GITHUB_ENV
+        run: echo "VERSION_NAME=$(./gradlew -q -p dependency-guard printVersionName)" >> $GITHUB_ENV
 
       - name: Publish release (main only)
-        run: ./gradlew -p dependency-guard-gradle-plugin closeAndReleaseRepository --no-daemon --no-parallel
+        run: ./gradlew -p dependency-guard closeAndReleaseRepository --no-daemon --no-parallel
         if: success() && !endsWith(env.VERSION_NAME, '-SNAPSHOT')
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}

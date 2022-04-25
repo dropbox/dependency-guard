@@ -4,8 +4,8 @@ include ":sample:module2"
 
 rootProject.name = "dependency-guard-root"
 
-includeBuild('dependency-guard-gradle-plugin') {
+includeBuild('dependency-guard') {
   dependencySubstitution {
-    substitute module('com.dropbox.dependency-guard:dependency-guard') with project(':')
+    substitute module('com.dropbox.dependency-guard:dependency-guard') using project(':')
   }
 }
