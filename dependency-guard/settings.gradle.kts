@@ -1,4 +1,4 @@
-rootProject.name = "dependency-guard-gradle-plugin"
+rootProject.name = "dependency-guard"
 
 // Because this is pulled in via "includeBuild" from the root project,
 // we need to point to the version catalog.  This same method is used
