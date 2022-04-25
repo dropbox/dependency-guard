@@ -1,6 +1,6 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
-import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder
+import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder.build
 import com.dropbox.gradle.plugins.dependencyguard.fixture.SimpleProject
 import com.dropbox.gradle.plugins.dependencyguard.util.exists
 import com.dropbox.gradle.plugins.dependencyguard.util.readLines
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 class PluginTest {
 
   @Test fun `can generate baseline`(): Unit = SimpleProject().use { project ->
-    val result = Builder.build(
+    val result = build(
       project = project,
       args = arrayOf(":lib:dependencyGuard")
     )

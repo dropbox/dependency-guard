@@ -1,16 +1,19 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
 import org.gradle.api.Action
+import org.gradle.api.model.ObjectFactory
+import javax.inject.Inject
 
 /**
  * Extension for [DependencyGuardPlugin] which leverages [DependencyGuardConfiguration]
  */
-public open class DependencyGuardPluginExtension {
-    internal val configurations = mutableListOf<DependencyGuardConfiguration>()
+public open class DependencyGuardPluginExtension @Inject constructor(
+    private val objects: ObjectFactory
+) {
+    internal val configurations = objects.domainObjectContainer(DependencyGuardConfiguration::class.java)
 
     public fun configuration(name: String) {
-        val configuration = DependencyGuardConfiguration(name)
-        configurations.add(configuration)
+        configurations.add(newConfiguration(name))
     }
 
     /**
@@ -24,8 +27,18 @@ public open class DependencyGuardPluginExtension {
      * }
      */
     public fun configuration(name: String, config: Action<DependencyGuardConfiguration>) {
-        val configuration = DependencyGuardConfiguration(name)
-        config.execute(configuration)
-        configurations.add(configuration)
+        configurations.add(newConfiguration(name, config))
+    }
+
+    // We cannot use `configurations.create(name, config)` because the config block is executed
+    // after the `all {}` block in the plugin. This is silly, but a reasonable workaround.
+    private fun newConfiguration(
+        name: String,
+        config: Action<DependencyGuardConfiguration>? = null
+    ): DependencyGuardConfiguration {
+        return objects.newInstance(DependencyGuardConfiguration::class.java, name).apply {
+            // execute the config block immediately, then add it to the container
+            config?.execute(this)
+        }
     }
 }

@@ -4,30 +4,30 @@ import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
+import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators.requirePluginConfig
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListReportWriter
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
-import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.initialization.dsl.ScriptHandler
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
+import org.gradle.util.GradleVersion
 
-internal open class DependencyGuardListTask : DefaultTask() {
+public abstract class DependencyGuardListTask : DefaultTask() {
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
     }
-
-    private lateinit var extension: DependencyGuardPluginExtension
-
-    private var shouldBaseline: Boolean = false
-
-    private val dependencyGuardConfigurations: MutableList<DependencyGuardConfiguration> get() = extension.configurations
 
     private fun generateReport(
         dependencyGuardConfiguration: DependencyGuardConfiguration
@@ -37,7 +37,7 @@ internal open class DependencyGuardListTask : DefaultTask() {
         var config = project.configurations.firstOrNull { it.name == configurationName }
 
         if (config == null) {
-            if (project.isRootProject()) {
+            if (forRootProject.get()) {
                 // Assuming this is the root project
                 config = project.buildscript.configurations.findByName(ScriptHandler.CLASSPATH_CONFIGURATION)
             }
@@ -56,9 +56,28 @@ internal open class DependencyGuardListTask : DefaultTask() {
         )
     }
 
+    @get:Input
+    public abstract val shouldBaseline: Property<Boolean>
+
+    @get:Input
+    public abstract val forRootProject: Property<Boolean>
+
+    @get:Input
+    public abstract val availableConfigurations: ListProperty<String>
+
+    @get:Nested
+    public abstract val monitoredConfigurations: ListProperty<DependencyGuardConfiguration>
+
     @Suppress("NestedBlockDepth")
     @TaskAction
     internal fun execute() {
+        requirePluginConfig(
+            isForRootProject = forRootProject.get(),
+            availableConfigurations = availableConfigurations.get(),
+            monitoredConfigurations = monitoredConfigurations.get()
+        )
+
+        val dependencyGuardConfigurations = monitoredConfigurations.get()
         ConfigurationValidators.validateConfigurationsAreAvailable(
             target = project,
             configurationNames = dependencyGuardConfigurations.map { it.configurationName }
@@ -114,7 +133,7 @@ internal open class DependencyGuardListTask : DefaultTask() {
                 reportType = reportType,
             ),
             report = report,
-            shouldBaseline = shouldBaseline,
+            shouldBaseline = shouldBaseline.get(),
             errorHandler = { }
         )
     }
@@ -154,8 +173,20 @@ internal open class DependencyGuardListTask : DefaultTask() {
         throw GradleException(errorMessage)
     }
 
-    internal fun setParams(extension: DependencyGuardPluginExtension, shouldBaseline: Boolean) {
-        this.extension = extension
-        this.shouldBaseline = shouldBaseline
+    internal fun setParams(
+        project: Project,
+        extension: DependencyGuardPluginExtension,
+        shouldBaseline: Boolean
+    ) {
+        this.forRootProject.set(project.isRootProject())
+        this.availableConfigurations.set(project.configurations.map { it.name })
+        this.monitoredConfigurations.set(extension.configurations)
+        this.shouldBaseline.set(shouldBaseline)
+
+        if (GradleVersion.current() >= GradleVersion.version("7.3")) {
+            doNotTrackState("This task only outputs to console")
+        } else {
+            outputs.upToDateWhen { false }
+        }
     }
 }

@@ -1,17 +1,25 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
-import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
+import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
+import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.initialization.dsl.ScriptHandler
+import org.gradle.api.logging.Logging
 
 internal object ConfigurationValidators {
 
-    fun requirePluginConfig(project: Project, extension: DependencyGuardPluginExtension) {
-        if (project.isRootProject()) {
-            println("Configured for Root Project")
-            if (extension.configurations.isNotEmpty() && extension.configurations.first().configurationName != ScriptHandler.CLASSPATH_CONFIGURATION) {
-                println("If you wish to use dependency guard on your root project, use the following config:")
+    private val logger = Logging.getLogger(DependencyGuardPlugin::class.java)
+
+    fun requirePluginConfig(
+        isForRootProject: Boolean,
+        availableConfigurations: List<String>,
+        monitoredConfigurations: List<DependencyGuardConfiguration>
+    ) {
+        if (isForRootProject) {
+            logger.info("Configured for Root Project")
+            if (monitoredConfigurations.isNotEmpty() && monitoredConfigurations.first().configurationName != ScriptHandler.CLASSPATH_CONFIGURATION) {
+                logger.error("If you wish to use dependency guard on your root project, use the following config:")
                 val message = StringBuilder().apply {
                     appendLine("dependencyGuard {")
                     appendLine("""  configuration("${ScriptHandler.CLASSPATH_CONFIGURATION}")""")
@@ -21,16 +29,14 @@ internal object ConfigurationValidators {
             }
             return
         }
-        val configurationNames = extension.configurations.map { it.configurationName }
+        val configurationNames = monitoredConfigurations.map { it.configurationName }
         require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
             StringBuilder().apply {
                 appendLine("Error: No configurations provided to Dependency Guard Plugin.")
                 appendLine("Here are some valid configurations you could use.")
                 appendLine("")
-                val availableConfigNames = project.configurations
-                    .filter {
-                        isClasspathConfig(it.name)
-                    }.map { it.name }
+                val availableConfigNames = availableConfigurations
+                    .filter { isClasspathConfig(it) }
 
                 appendLine("dependencyGuard {")
                 availableConfigNames.forEach {
@@ -41,7 +47,7 @@ internal object ConfigurationValidators {
         }
     }
 
-    fun isClasspathConfig(configName: String): Boolean {
+    private fun isClasspathConfig(configName: String): Boolean {
         return configName.endsWith(
             suffix = "CompileClasspath",
             ignoreCase = true
@@ -55,6 +61,8 @@ internal object ConfigurationValidators {
         target: Project,
         configurationNames: List<String>
     ) {
+        val logger = target.logger
+
         if (target.isRootProject()) {
             if (configurationNames != listOf(ScriptHandler.CLASSPATH_CONFIGURATION)) {
                 val message = StringBuilder().apply {
@@ -73,13 +81,13 @@ internal object ConfigurationValidators {
             target.configurations
                 .firstOrNull { it.name == configurationName }
                 ?: run {
-                    println("Available Configurations:")
+                    logger.quiet("Available Configurations:")
                     target.configurations
                         .filter {
                             isClasspathConfig(it.name)
                         }
                         .forEach {
-                            println("* " + it.name)
+                            logger.quiet("* " + it.name)
                         }
                     throw GradleException(
                         "Configuration with name $configurationName was not found for ${target.name}"
