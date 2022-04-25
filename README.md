@@ -10,7 +10,7 @@ A small single version bump of `androidx.activity` from `1.3.1` -> `1.4.0` cause
 ![](docs/images/002-bump-version-change-detected.gif)
 
 ## Custom Rules for Allowed Dependencies
-For a given configuration, you may never want `junit` to be shipped.  You can prevent this by modifying the `isAllowed` rule to return `!it.contains("junit")` for your situation.
+For a given configuration, you may never want `junit` to be shipped.  You can prevent this by modifying the `allowRule` rule to return `!it.contains("junit")` for your situation.
 
 ![](docs/images/007-filter-dependencies.gif)
 
@@ -85,7 +85,7 @@ If you have explicit test or debugging dependencies you never want to ship, you 
 ```kotlin
 dependencyGuard {
     configuration("releaseRuntimeClasspath") {
-        isAllowed = {
+        allowRule = {
             // Disallow dependencies with a name containing "test"
             !it.contains("junit")
         }
@@ -207,7 +207,7 @@ dependencyGuard {
     tree = false // Defaults to false
 
     // Filter through dependencies
-    isAllowed = {dependencyName: String ->
+    allowRule = {dependencyName: String ->
         return true // Defaults to true
     }
   }

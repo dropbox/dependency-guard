@@ -51,7 +51,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         return DependencyGuardReportData(
             projectPath = project.path,
             configurationName = configurationName,
-            isAllowed = dependencyGuardConfiguration.isAllowed,
+            isAllowed = dependencyGuardConfiguration.allowRule,
             dependencies = dependencies,
         )
     }

@@ -36,10 +36,11 @@ public open class DependencyGuardConfiguration @Inject constructor(
     public var tree: Boolean = false
 
     /**
-     * Whether to allow a dependency.
+     * Rule to determine if a dependency will be allowed.
      *
      * TODO: not sure how to model this as a task input. May not matter since the task that uses it
      *  can never be up-to-date.
      */
-    public var isAllowed: (dependencyName: String) -> Boolean = { true }
+    @get:Input
+    public var allowRule: (dependencyName: String) -> Boolean = { true }
 }
