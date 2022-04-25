@@ -20,7 +20,7 @@ dependencies {
 dependencyGuard {
     // All dependencies included in Production Release APK
     configuration("releaseRuntimeClasspath") {
-        isAllowed = {
+        allowRule = {
             // Disallow dependencies with a name containing "test"
             !it.contains("test")
         }
