@@ -9,6 +9,7 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReport
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
+import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import org.gradle.api.DefaultTask
@@ -148,7 +149,7 @@ internal open class DependencyGuardListTask : DefaultTask() {
             }
             appendLine()
             appendLine("$type comparison to baseline does not match.")
-            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.path}:dependencyGuardBaseline")
+            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
         }.toString()
         throw GradleException(errorMessage)
     }

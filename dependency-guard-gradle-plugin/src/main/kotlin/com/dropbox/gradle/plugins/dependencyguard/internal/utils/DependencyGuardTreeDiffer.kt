@@ -1,6 +1,7 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
+import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
 import java.io.File
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -63,7 +64,7 @@ internal class DependencyGuardTreeDiffer(
                         StringBuilder().apply {
                             appendLine(failureMessage)
                             appendLine("Dependency Tree comparison to baseline does not match.")
-                            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.path}:dependencyGuardBaseline")
+                            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
                         }.toString()
                     )
                 }
