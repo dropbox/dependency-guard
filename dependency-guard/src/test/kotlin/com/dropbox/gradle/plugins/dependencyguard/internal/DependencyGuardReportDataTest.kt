@@ -110,7 +110,7 @@ internal class DependencyGuardReportDataTest {
         val SAMPLE_REPORT = DependencyGuardReportData(
             projectPath = PROJECT_PATH,
             configurationName = CONFIGURATION_NAME,
-            isAllowed = { true },
+            allowRule = { true },
             dependencies = listOf()
         )
     }

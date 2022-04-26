@@ -51,7 +51,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         return DependencyGuardReportData(
             projectPath = project.path,
             configurationName = configurationName,
-            isAllowed = dependencyGuardConfiguration.allowRule,
+            allowRule = dependencyGuardConfiguration.allowRule,
             dependencies = dependencies,
         )
     }
@@ -150,7 +150,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
                 }
                 appendLine()
             }
-            appendLine("These dependencies are transitively included and must be removed based on the configured 'isAllowed' rules.")
+            appendLine("These dependencies are included and must be removed based on the configured 'allowRule'.")
             appendLine()
         }.toString()
 

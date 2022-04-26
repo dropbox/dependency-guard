@@ -8,7 +8,7 @@ internal data class DependencyGuardReportData(
     val projectPath: String,
     val configurationName: String,
     val dependencies: List<Dependency>,
-    val isAllowed: (dependencyName: String) -> Boolean,
+    val allowRule: (dependencyName: String) -> Boolean,
 ) {
     private val artifactDeps = dependencies
         .filterIsInstance<ArtifactDependency>()
@@ -47,7 +47,7 @@ internal data class DependencyGuardReportData(
     val artifactDepsReport: String = artifactDeps.toReportString()
 
     val disallowed: List<Dependency> = dependencies
-        .filter { !isAllowed(it.name) }
+        .filter { !allowRule(it.name) }
         .distinct()
         .sortedBy { it.name }
 
