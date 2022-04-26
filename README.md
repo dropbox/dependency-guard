@@ -248,7 +248,7 @@ buildscript {
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
-        classpath("com.dropbox.dependency-guard:dependency-guard:0.1.0-SNAPSHOT")
+        classpath("com.dropbox.dependency-guard:dependency-guard:0.1.0")
     }
 }
 ```
