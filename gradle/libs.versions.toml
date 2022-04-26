@@ -15,5 +15,5 @@ androidx-activity = { module = "androidx.activity:activity", version.ref = "andr
 dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 mavenPublish = { id = "com.vanniktech.maven.publish", version = "0.18.0" }
-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.8.0" }
+binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version = "0.9.0" }
 
