@@ -38,13 +38,13 @@ internal class DependencyGuardListReportWriter(
             )
             false
         } else {
+            val expectedFileContent = projectDirOutputFile.readText()
             // Perform Diff
             DependencyListDiff.performDiff(
-                type = type,
                 projectPath = report.projectPath,
                 configurationName = report.configurationName,
-                projectDirOutputFile = projectDirOutputFile,
-                depsReportString = reportContent,
+                expectedDependenciesFileContent = expectedFileContent,
+                actualDependenciesFileContent = reportContent,
                 errorHandler = errorHandler
             )
         }
