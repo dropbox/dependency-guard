@@ -1,8 +1,6 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
-import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
-import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
-import java.io.File
+import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineTaskForProjectPath
 
 internal object DependencyListDiff {
 
@@ -11,23 +9,22 @@ internal object DependencyListDiff {
      */
     @Suppress("LongParameterList")
     fun performDiff(
-        type: DependencyGuardReportType,
         projectPath: String,
         configurationName: String,
-        projectDirOutputFile: File,
-        depsReportString: String,
+        expectedDependenciesFileContent:String,
+        actualDependenciesFileContent: String,
         errorHandler: (String) -> Unit,
     ): Boolean {
         // Compare
-        val expectedFileContent = projectDirOutputFile.readText()
-        val expectedLines = expectedFileContent.lines()
-        val difference = compare(expectedLines, depsReportString.lines())
+        val expectedLines = expectedDependenciesFileContent.lines()
+        val difference = compare(expectedLines, actualDependenciesFileContent.lines())
         if (difference.isNotBlank()) {
+            val dependenciesChangedMessage = """Dependencies Changed in "$projectPath" for configuration "$configurationName""""
             val errorMessage = StringBuilder().apply {
                 appendLine(
                     ColorTerminal.printlnColor(
                         ColorTerminal.ANSI_YELLOW,
-                        "$type Dependencies Changed $projectPath for configuration \"$configurationName\":"
+                        dependenciesChangedMessage
                     )
                 )
                 difference.lines().forEach {
@@ -45,8 +42,8 @@ internal object DependencyListDiff {
                     ColorTerminal.printlnColor(
                         ColorTerminal.ANSI_RED,
                         """
-                        $type Dependencies Changed in $projectPath for configuration "$configurationName"
-                        If this is intentional, re-baseline using $projectPath:${DependencyGuardPlugin.DEPENDENCY_GUARD_BASELINE_TASK_NAME}
+                        $dependenciesChangedMessage
+                        If this is intentional, re-baseline using ./gradlew ${getQualifiedBaselineTaskForProjectPath(projectPath)}
                         """.trimIndent()
                     )
                 )
