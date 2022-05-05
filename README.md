@@ -228,7 +228,7 @@ This task is added to any project that you apply the plugin to.  The plugin shou
 
 ### `dependencyGuardBaseline`
 
-This task overwrites the dependencies in the `dependency-guard` directory in your module.
+This task overwrites the dependencies in the `dependencies` directory in your module.
 
 ## Baseline Files
 
