@@ -54,16 +54,14 @@ internal data class DependencyGuardReportData(
 
     private fun List<Dependency>.toReportString(): String {
         val deps = this
-        return StringBuilder()
-            .apply {
-                deps
-                    .forEach {
-                        val mappedName = baselineMap(it.name)
-                        if (mappedName != null) {
-                            appendLine(mappedName)
-                        }
-                    }
-            }.toString()
+        return StringBuilder().apply {
+            deps.forEach {
+                val mappedName = baselineMap(it.name)
+                if (mappedName != null) {
+                    appendLine(mappedName)
+                }
+            }
+        }.toString()
     }
 
     val artifactDepsReport: String = artifactDeps.toReportString()
