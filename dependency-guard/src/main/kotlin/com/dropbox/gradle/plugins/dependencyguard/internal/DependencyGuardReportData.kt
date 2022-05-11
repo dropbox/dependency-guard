@@ -25,7 +25,7 @@ internal data class DependencyGuardReportData(
         .distinct()
         .sortedBy { it.name }
 
-    private val allDeps : List<Dependency> = mutableListOf<Dependency>().apply {
+    private val allDeps: List<Dependency> = mutableListOf<Dependency>().apply {
         addAll(moduleDeps)
         addAll(artifactDeps)
     }
@@ -47,12 +47,6 @@ internal data class DependencyGuardReportData(
         }
     }.toString()
 
-    @Deprecated("This will be removed as the module and artifact reports were combined")
-    val moduleDepsReport: String = moduleDeps.toReportString()
-
-    val artifactDepsReport: String = artifactDeps
-        .toReportString()
-
     val disallowed: List<Dependency> = dependencies
         .filter { !allowRule(it.name) }
         .distinct()
@@ -71,6 +65,8 @@ internal data class DependencyGuardReportData(
                     }
             }.toString()
     }
+
+    val artifactDepsReport: String = artifactDeps.toReportString()
 
     fun reportForConfig(artifacts: Boolean, modules: Boolean): String {
         return allDepsReport(artifacts, modules)

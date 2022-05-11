@@ -84,7 +84,24 @@ internal class DependencyGuardReportDataTest {
     }
 
     @Test
-    fun `test baseline filter`() {
+    fun `test baselineMap modify`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "group",
+                    artifact = "artifact",
+                    version = "1"
+                )
+            ),
+            baselineMap = { "$it-extra" }
+        )
+
+        assertThat(simpleReport.artifactDepsReport)
+            .contains("group:artifact:1-extra")
+    }
+
+    @Test
+    fun `test baselineMap no-op`() {
         val simpleReport = SAMPLE_REPORT.copy(
             dependencies = listOf(
                 ArtifactDependency(
@@ -94,20 +111,23 @@ internal class DependencyGuardReportDataTest {
                 )
             )
         )
-        println(simpleReport.artifactDepsReport)
         assertThat(simpleReport.artifactDepsReport)
             .contains("group:artifact:1")
+    }
 
-        val simpleReportWithBaselineMapModifying = simpleReport.copy(
-            baselineMap = { "$it-extra" }
+    @Test
+    fun `test baselineMap remove`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "group",
+                    artifact = "artifact",
+                    version = "1"
+                )
+            ),
+            baselineMap = { null },
         )
-        assertThat(simpleReportWithBaselineMapModifying.artifactDepsReport)
-            .contains("group:artifact:1-extra")
-
-        val simpleReportWithBaselineMapRemoving = simpleReport.copy(
-            baselineMap = { null }
-        )
-        assertThat(simpleReportWithBaselineMapRemoving.artifactDepsReport)
+        assertThat(simpleReport.artifactDepsReport)
             .doesNotContain("dependency-guard")
     }
 
