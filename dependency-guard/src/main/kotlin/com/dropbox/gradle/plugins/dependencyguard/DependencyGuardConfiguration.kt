@@ -45,8 +45,8 @@ public open class DependencyGuardConfiguration @Inject constructor(
     public var allowRule: (dependencyName: String) -> Boolean = { true }
 
     /**
-     * Rule to determine if a dependency will be included in the baseline file.
+     * Modify a dependency name or remove it (by returning null) from the baseline file
      */
     @get:Input
-    public var baselineFilter: (dependencyName: String) -> Boolean = { true }
+    public var baselineMap: (dependencyName: String) -> String? = { it }
 }

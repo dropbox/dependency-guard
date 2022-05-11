@@ -10,23 +10,22 @@ internal data class DependencyGuardReportData(
     val dependencies: List<Dependency>,
     val allowRule: (dependencyName: String) -> Boolean,
     /**
-     * Includes dependency in baseline file when "true"
+     * Transform or remove (with null) dependencies in the baseline
      */
-    val baselineFilter: (dependencyName: String) -> Boolean,
+    val baselineMap: (dependencyName: String) -> String?,
 ) {
-    private val artifactDeps = dependencies
+
+    private val artifactDeps: List<ArtifactDependency> = dependencies
         .filterIsInstance<ArtifactDependency>()
         .distinct()
-        .filter { baselineFilter(it.name) } // Remove dependencies from the baseline using this filter
         .sortedBy { it.name }
 
-    private val moduleDeps = dependencies
+    private val moduleDeps: List<ModuleDependency> = dependencies
         .filterIsInstance<ModuleDependency>()
         .distinct()
-        .filter { baselineFilter(it.name) } // Remove dependencies from the baseline using this filter
         .sortedBy { it.name }
 
-    private val allDeps = mutableListOf<Dependency>().apply {
+    private val allDeps : List<Dependency> = mutableListOf<Dependency>().apply {
         addAll(moduleDeps)
         addAll(artifactDeps)
     }
@@ -61,12 +60,16 @@ internal data class DependencyGuardReportData(
 
     private fun List<Dependency>.toReportString(): String {
         val deps = this
-        return StringBuilder().apply {
-            deps
-                .forEach {
-                    appendLine(it.name)
-                }
-        }.toString()
+        return StringBuilder()
+            .apply {
+                deps
+                    .forEach {
+                        val mappedName = baselineMap(it.name)
+                        if (mappedName != null) {
+                            appendLine(mappedName)
+                        }
+                    }
+            }.toString()
     }
 
     fun reportForConfig(artifacts: Boolean, modules: Boolean): String {

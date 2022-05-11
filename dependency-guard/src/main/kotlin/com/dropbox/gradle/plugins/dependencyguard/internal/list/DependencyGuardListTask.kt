@@ -46,7 +46,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             projectPath = project.path,
             configurationName = configurationName,
             allowRule = dependencyGuardConfiguration.allowRule,
-            baselineFilter = dependencyGuardConfiguration.baselineFilter,
+            baselineMap = dependencyGuardConfiguration.baselineMap,
             dependencies = dependencies,
         )
     }
