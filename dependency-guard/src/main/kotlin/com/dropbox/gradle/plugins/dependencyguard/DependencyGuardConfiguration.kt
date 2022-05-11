@@ -25,7 +25,7 @@ public open class DependencyGuardConfiguration @Inject constructor(
 
     /** Whether to include modules in the dependency list report */
     @get:Input
-    public var modules: Boolean = true
+    public var modules: Boolean = false
 
     /**
      * Whether to create the dependency tree report

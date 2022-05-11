@@ -98,8 +98,6 @@ dependencyGuard {
 ## Configuring Your Dependency Baseline (Optional)
 By default, Dependency Guard tracks modules and artifacts in a list format is generated at `dependencies/${configurationName}.txt`.
 ```
-:sample:module1
-:sample:module2
 org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
@@ -114,8 +112,8 @@ You can customize choose to not track modules or artifacts:
 dependencyGuard {
   configuration("releaseRuntimeClasspath") {
     // What is included in the list report
-    modules = true // Defaults to true
     artifacts = true // Defaults to true
+    modules = false // Defaults to false
   }
 }
 ```
@@ -200,8 +198,8 @@ If the dependencies do change, you'll get easy to read warnings to help you visu
 dependencyGuard {
   configuration("releaseRuntimeClasspath") {
     // What is included in the list report
-    modules = true // Defaults to true
     artifacts = true // Defaults to true
+    modules = false // Defaults to false
 
     // Tree Report
     tree = false // Defaults to false
