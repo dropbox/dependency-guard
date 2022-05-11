@@ -83,6 +83,54 @@ internal class DependencyGuardReportDataTest {
         }
     }
 
+    @Test
+    fun `test baselineMap modify`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "group",
+                    artifact = "artifact",
+                    version = "1"
+                )
+            ),
+            baselineMap = { "$it-extra" }
+        )
+
+        assertThat(simpleReport.artifactDepsReport)
+            .contains("group:artifact:1-extra")
+    }
+
+    @Test
+    fun `test baselineMap no-op`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "group",
+                    artifact = "artifact",
+                    version = "1"
+                )
+            )
+        )
+        assertThat(simpleReport.artifactDepsReport)
+            .contains("group:artifact:1")
+    }
+
+    @Test
+    fun `test baselineMap remove`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "group",
+                    artifact = "artifact",
+                    version = "1"
+                )
+            ),
+            baselineMap = { null },
+        )
+        assertThat(simpleReport.artifactDepsReport)
+            .isEmpty()
+    }
+
     private class TestDelegate(val reportType: DependencyGuardReportType) {
         val errorMessages = mutableListOf<String>()
         val errorHandler: (String) -> Unit = { errorMessages.add(it) }
@@ -111,6 +159,7 @@ internal class DependencyGuardReportDataTest {
             projectPath = PROJECT_PATH,
             configurationName = CONFIGURATION_NAME,
             allowRule = { true },
+            baselineMap = { it },
             dependencies = listOf()
         )
     }

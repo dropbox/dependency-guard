@@ -9,18 +9,23 @@ internal data class DependencyGuardReportData(
     val configurationName: String,
     val dependencies: List<Dependency>,
     val allowRule: (dependencyName: String) -> Boolean,
+    /**
+     * Transform or remove (with null) dependencies in the baseline
+     */
+    val baselineMap: (dependencyName: String) -> String?,
 ) {
-    private val artifactDeps = dependencies
+
+    private val artifactDeps: List<ArtifactDependency> = dependencies
         .filterIsInstance<ArtifactDependency>()
         .distinct()
         .sortedBy { it.name }
 
-    private val moduleDeps = dependencies
+    private val moduleDeps: List<ModuleDependency> = dependencies
         .filterIsInstance<ModuleDependency>()
         .distinct()
         .sortedBy { it.name }
 
-    private val allDeps = mutableListOf<Dependency>().apply {
+    private val allDeps: List<Dependency> = mutableListOf<Dependency>().apply {
         addAll(moduleDeps)
         addAll(artifactDeps)
     }
@@ -42,10 +47,6 @@ internal data class DependencyGuardReportData(
         }
     }.toString()
 
-    val moduleDepsReport: String = moduleDeps.toReportString()
-
-    val artifactDepsReport: String = artifactDeps.toReportString()
-
     val disallowed: List<Dependency> = dependencies
         .filter { !allowRule(it.name) }
         .distinct()
@@ -55,10 +56,15 @@ internal data class DependencyGuardReportData(
         val deps = this
         return StringBuilder().apply {
             deps.forEach {
-                appendLine(it.name)
+                val mappedName = baselineMap(it.name)
+                if (mappedName != null) {
+                    appendLine(mappedName)
+                }
             }
         }.toString()
     }
+
+    val artifactDepsReport: String = artifactDeps.toReportString()
 
     fun reportForConfig(artifacts: Boolean, modules: Boolean): String {
         return allDepsReport(artifacts, modules)

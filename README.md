@@ -208,6 +208,10 @@ dependencyGuard {
     allowRule = {dependencyName: String ->
         return true // Defaults to true
     }
+    // Modify a dependency name or remove it (by returning null) from the baseline file
+    baselineMap = { dependencyName: String ->
+      return dependencyName // Defaults to return itself
+    }
   }
 }
 ```
