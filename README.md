@@ -208,6 +208,10 @@ dependencyGuard {
     allowRule = {dependencyName: String ->
         return true // Defaults to true
     }
+    // Filter out dependencies from the baseline file
+    baselineFilter = { dependencyName: String ->
+      return true // Defaults to true
+    }
   }
 }
 ```

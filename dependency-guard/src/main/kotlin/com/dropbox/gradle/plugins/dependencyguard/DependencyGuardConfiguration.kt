@@ -43,4 +43,10 @@ public open class DependencyGuardConfiguration @Inject constructor(
      */
     @get:Input
     public var allowRule: (dependencyName: String) -> Boolean = { true }
+
+    /**
+     * Rule to determine if a dependency will be included in the baseline file.
+     */
+    @get:Input
+    public var baselineFilter: (dependencyName: String) -> Boolean = { true }
 }

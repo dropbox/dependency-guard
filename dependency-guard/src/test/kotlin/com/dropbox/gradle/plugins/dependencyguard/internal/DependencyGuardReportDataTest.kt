@@ -83,6 +83,27 @@ internal class DependencyGuardReportDataTest {
         }
     }
 
+    @Test
+    fun `test baseline filter`() {
+        val simpleReport = SAMPLE_REPORT.copy(
+            dependencies = listOf(
+                ArtifactDependency(
+                    group = "com.dropbox.dependency-guard",
+                    artifact = "dependency-guard",
+                    version = "0.0"
+                )
+            )
+        )
+        assertThat(simpleReport.artifactDepsReport)
+            .contains("dependency-guard")
+
+        val simpleReportWithBaselineFilter = simpleReport.copy(
+            baselineFilter = { !it.contains("dependency-guard") }
+        )
+        assertThat(simpleReportWithBaselineFilter.artifactDepsReport)
+            .doesNotContain("dependency-guard")
+    }
+
     private class TestDelegate(val reportType: DependencyGuardReportType) {
         val errorMessages = mutableListOf<String>()
         val errorHandler: (String) -> Unit = { errorMessages.add(it) }
@@ -111,6 +132,7 @@ internal class DependencyGuardReportDataTest {
             projectPath = PROJECT_PATH,
             configurationName = CONFIGURATION_NAME,
             allowRule = { true },
+            baselineFilter = { true },
             dependencies = listOf()
         )
     }

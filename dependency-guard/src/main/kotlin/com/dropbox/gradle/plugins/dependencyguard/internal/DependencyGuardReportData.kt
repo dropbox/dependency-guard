@@ -9,15 +9,21 @@ internal data class DependencyGuardReportData(
     val configurationName: String,
     val dependencies: List<Dependency>,
     val allowRule: (dependencyName: String) -> Boolean,
+    /**
+     * Includes dependency in baseline file when "true"
+     */
+    val baselineFilter: (dependencyName: String) -> Boolean,
 ) {
     private val artifactDeps = dependencies
         .filterIsInstance<ArtifactDependency>()
         .distinct()
+        .filter { baselineFilter(it.name) } // Remove dependencies from the baseline using this filter
         .sortedBy { it.name }
 
     private val moduleDeps = dependencies
         .filterIsInstance<ModuleDependency>()
         .distinct()
+        .filter { baselineFilter(it.name) } // Remove dependencies from the baseline using this filter
         .sortedBy { it.name }
 
     private val allDeps = mutableListOf<Dependency>().apply {
@@ -42,9 +48,11 @@ internal data class DependencyGuardReportData(
         }
     }.toString()
 
+    @Deprecated("This will be removed as the module and artifact reports were combined")
     val moduleDepsReport: String = moduleDeps.toReportString()
 
-    val artifactDepsReport: String = artifactDeps.toReportString()
+    val artifactDepsReport: String = artifactDeps
+        .toReportString()
 
     val disallowed: List<Dependency> = dependencies
         .filter { !allowRule(it.name) }
@@ -54,9 +62,10 @@ internal data class DependencyGuardReportData(
     private fun List<Dependency>.toReportString(): String {
         val deps = this
         return StringBuilder().apply {
-            deps.forEach {
-                appendLine(it.name)
-            }
+            deps
+                .forEach {
+                    appendLine(it.name)
+                }
         }.toString()
     }
 
