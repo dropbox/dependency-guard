@@ -128,7 +128,7 @@ internal class DependencyGuardReportDataTest {
             baselineMap = { null },
         )
         assertThat(simpleReport.artifactDepsReport)
-            .doesNotContain("dependency-guard")
+            .isEmpty()
     }
 
     private class TestDelegate(val reportType: DependencyGuardReportType) {
