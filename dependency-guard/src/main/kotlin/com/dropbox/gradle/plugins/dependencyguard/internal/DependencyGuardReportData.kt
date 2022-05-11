@@ -1,5 +1,6 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
+import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.models.ArtifactDependency
 import com.dropbox.gradle.plugins.dependencyguard.models.Dependency
 import com.dropbox.gradle.plugins.dependencyguard.models.ModuleDependency
@@ -24,11 +25,6 @@ internal data class DependencyGuardReportData(
         .filterIsInstance<ModuleDependency>()
         .distinct()
         .sortedBy { it.name }
-
-    private val allDeps: List<Dependency> = mutableListOf<Dependency>().apply {
-        addAll(moduleDeps)
-        addAll(artifactDeps)
-    }
 
     private fun allDepsReport(artifacts: Boolean, modules: Boolean): String = StringBuilder().apply {
         if (modules) {
@@ -64,9 +60,7 @@ internal data class DependencyGuardReportData(
         }.toString()
     }
 
-    val artifactDepsReport: String = artifactDeps.toReportString()
-
-    fun reportForConfig(artifacts: Boolean, modules: Boolean): String {
+    fun reportForConfig(artifacts: Boolean = true, modules: Boolean = true): String {
         return allDepsReport(artifacts, modules)
     }
 }

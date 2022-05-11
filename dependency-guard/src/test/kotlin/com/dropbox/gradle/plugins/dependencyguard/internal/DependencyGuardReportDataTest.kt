@@ -34,10 +34,10 @@ internal class DependencyGuardReportDataTest {
                 shouldBaseline = false,
             )
 
-            assertThat(report2.artifactDepsReport)
-                .isNotEqualTo(report1.artifactDepsReport)
-            assertThat(report2.artifactDepsReport.lines().size)
-                .isEqualTo(report1.artifactDepsReport.lines().size + 1)
+            assertThat(report2.reportForConfig())
+                .isNotEqualTo(report1.reportForConfig())
+            assertThat(report2.reportForConfig().lines().size)
+                .isEqualTo(report1.reportForConfig().lines().size + 1)
             assertThat(errorMessages.size)
                 .isEqualTo(1)
             assertThat(errorMessages[0]).contains("+ com.dropbox:focus:1.0.0")
@@ -72,10 +72,10 @@ internal class DependencyGuardReportDataTest {
 
             assertThat(errorMessages.size)
                 .isEqualTo(1)
-            assertThat(report2.artifactDepsReport)
-                .isNotEqualTo(report1.artifactDepsReport)
-            assertThat(report2.artifactDepsReport.lines().size)
-                .isEqualTo(report1.artifactDepsReport.lines().size)
+            assertThat(report2.reportForConfig())
+                .isNotEqualTo(report1.reportForConfig())
+            assertThat(report2.reportForConfig().lines().size)
+                .isEqualTo(report1.reportForConfig().lines().size)
             assertThat(errorMessages[0])
                 .contains("- com.dropbox:focus:1.0.0")
             assertThat(errorMessages[0])
@@ -96,7 +96,7 @@ internal class DependencyGuardReportDataTest {
             baselineMap = { "$it-extra" }
         )
 
-        assertThat(simpleReport.artifactDepsReport)
+        assertThat(simpleReport.reportForConfig())
             .contains("group:artifact:1-extra")
     }
 
@@ -111,7 +111,7 @@ internal class DependencyGuardReportDataTest {
                 )
             )
         )
-        assertThat(simpleReport.artifactDepsReport)
+        assertThat(simpleReport.reportForConfig())
             .contains("group:artifact:1")
     }
 
@@ -127,7 +127,7 @@ internal class DependencyGuardReportDataTest {
             ),
             baselineMap = { null },
         )
-        assertThat(simpleReport.artifactDepsReport)
+        assertThat(simpleReport.reportForConfig())
             .isEmpty()
     }
 

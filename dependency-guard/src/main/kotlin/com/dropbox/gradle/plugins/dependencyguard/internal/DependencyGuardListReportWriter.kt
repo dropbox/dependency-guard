@@ -25,7 +25,7 @@ internal class DependencyGuardListReportWriter(
             modules = modules
         )
 
-        buildDirOutputFile.writeText(report.artifactDepsReport)
+        buildDirOutputFile.writeText(reportContent)
 
         val projectDirOutputFileExists = projectDirOutputFile.exists()
         return if (shouldBaseline || !projectDirOutputFileExists) {
