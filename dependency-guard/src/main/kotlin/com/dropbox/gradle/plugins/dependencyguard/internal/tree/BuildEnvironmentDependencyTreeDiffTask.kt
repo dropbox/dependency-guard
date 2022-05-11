@@ -3,6 +3,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.Project
 import org.gradle.api.initialization.dsl.ScriptHandler
 import org.gradle.api.tasks.TaskAction
@@ -47,6 +48,8 @@ internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentRep
     override fun setParams(configurationName: String, shouldBaseline: Boolean) {
         this.shouldBaseline = shouldBaseline
         this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
+
+        declareCompatibilities()
     }
 
     @TaskAction

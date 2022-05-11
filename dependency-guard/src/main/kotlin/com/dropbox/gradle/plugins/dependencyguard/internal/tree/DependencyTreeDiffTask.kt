@@ -3,6 +3,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.tasks.diagnostics.DependencyReportTask
 
 internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTask {
@@ -36,5 +37,7 @@ internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTas
         this.configurationName = configurationName
         super.setConfiguration(configurationName)
         this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
+
+        declareCompatibilities()
     }
 }
