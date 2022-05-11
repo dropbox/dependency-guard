@@ -3,15 +3,10 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.list
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
-import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
+import com.dropbox.gradle.plugins.dependencyguard.internal.*
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators.requirePluginConfig
-import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListReportWriter
-import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
-import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
-import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
-import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
-import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -21,7 +16,6 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
-import org.gradle.util.GradleVersion
 
 public abstract class DependencyGuardListTask : DefaultTask() {
 
@@ -183,10 +177,6 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         this.monitoredConfigurations.set(extension.configurations)
         this.shouldBaseline.set(shouldBaseline)
 
-        if (GradleVersion.current() >= GradleVersion.version("7.3")) {
-            doNotTrackState("This task only outputs to console")
-        } else {
-            outputs.upToDateWhen { false }
-        }
+        declareCompatibilities()
     }
 }
