@@ -2,19 +2,19 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineTaskForProjectPath
 
-internal interface DependencyListDiffResult {
+internal sealed class DependencyListDiffResult {
 
-    object BaselineCreated : DependencyListDiffResult
+    internal object BaselineCreated : DependencyListDiffResult()
 
-    interface DiffPerformed : DependencyListDiffResult {
+    internal sealed class DiffPerformed : DependencyListDiffResult() {
 
-        object NoDiff : DiffPerformed
+        internal object NoDiff : DiffPerformed()
 
-        data class HasDiff(
+        internal data class HasDiff(
             val projectPath: String,
             val configurationName: String,
             val removedAndAddedLines: RemovedAndAddedLines,
-        ) : DiffPerformed {
+        ) : DiffPerformed() {
 
             val dependenciesChangedMessage =
                 """Dependencies Changed in $projectPath for configuration $configurationName"""
