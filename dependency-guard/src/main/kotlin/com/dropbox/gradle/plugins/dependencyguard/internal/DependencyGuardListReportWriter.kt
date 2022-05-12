@@ -63,7 +63,7 @@ internal class DependencyGuardListReportWriter(
             StringBuilder()
                 .apply {
                     appendLine("Dependency Guard $type baseline created for $projectPath for configuration $configurationName.")
-                    appendLine("File: ${baselineFile.canonicalPath}")
+                    appendLine("File: file://${baselineFile.canonicalPath}")
                 }
                 .toString()
         )
