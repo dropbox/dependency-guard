@@ -45,9 +45,7 @@ internal class DependencyGuardTreeDiffer(
             val diff = dependencyTreeDiff(baseline, generatedTree)
 
             if (diff.isNotBlank()) {
-                val failureMessage =
-                    "***** DEPENDENCY CHANGE DETECTED *****"
-                ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, failureMessage)
+                ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, Messaging.dependencyChangeDetected)
 
                 // splitting string using lines() function
                 diff.lines().forEach {
@@ -63,9 +61,10 @@ internal class DependencyGuardTreeDiffer(
 
                 throw GradleException(
                     StringBuilder().apply {
-                        appendLine(failureMessage)
+                        appendLine(Messaging.dependencyChangeDetected)
                         appendLine("Dependency Tree comparison to baseline does not match.")
-                        appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
+                        appendLine()
+                        appendLine("If this is intentional, re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
                     }.toString()
                 )
             }
