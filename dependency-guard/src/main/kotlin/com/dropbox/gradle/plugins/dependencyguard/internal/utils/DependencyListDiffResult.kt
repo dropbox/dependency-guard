@@ -49,7 +49,7 @@ internal sealed class DependencyListDiffResult {
                 """If this is intentional, re-baseline using ./gradlew $rebaselineTaskName""".trimIndent()
 
             fun createDiffMessage(withColor: Boolean): String {
-                StringBuilder().apply {
+                return StringBuilder().apply {
                     apply {
                         appendLine(
                             if (withColor) {
@@ -74,38 +74,6 @@ internal sealed class DependencyListDiffResult {
                         )
                     }
                 }.toString()
-
-                val outputMessage = StringBuilder()
-                if (removedAndAddedLines.hasDifference) {
-                    outputMessage.apply {
-                        appendLine(
-
-                        )
-
-                        removedAndAddedLines.diffTextWithPlusAndMinus.lines().forEach {
-                            appendLine(
-                                if (it.startsWith("-")) {
-                                    ColorTerminal.printlnColor(ColorTerminal.ANSI_RED, it)
-                                } else if (it.startsWith("+")) {
-                                    ColorTerminal.printlnColor(ColorTerminal.ANSI_GREEN, it)
-                                } else {
-                                    it
-                                }
-                            )
-                        }
-                        appendLine(
-                            ColorTerminal.printlnColor(
-                                ColorTerminal.ANSI_RED,
-                                """If this is intentional, re-baseline using ./gradlew $rebaselineTaskName""".trimIndent()
-                            )
-                        )
-                    }
-                } else {
-                    outputMessage.appendLine(
-                        "No Dependency Changes Found in $projectPath for configuration \"$configurationName\""
-                    )
-                }
-                return outputMessage.toString()
             }
         }
     }
