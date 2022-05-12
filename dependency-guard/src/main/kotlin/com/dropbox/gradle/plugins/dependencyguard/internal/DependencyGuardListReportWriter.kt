@@ -2,7 +2,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiff
-import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DifferenceResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import java.io.File
 
 internal class DependencyGuardListReportWriter(
@@ -18,8 +18,7 @@ internal class DependencyGuardListReportWriter(
         projectDirOutputFile: File,
         report: DependencyGuardReportData,
         shouldBaseline: Boolean,
-        errorHandler: (String) -> Unit,
-    ): DifferenceResult {
+    ): DependencyListDiffResult {
         val type: DependencyGuardReportType = DependencyGuardReportType.LIST
         val reportContent = report.reportForConfig(
             artifacts = artifacts,
@@ -37,17 +36,21 @@ internal class DependencyGuardListReportWriter(
                 configurationName = report.configurationName,
                 baselineFile = projectDirOutputFile
             )
-            DifferenceResult.BaselineCreated
+            DependencyListDiffResult.BaselineCreated
         } else {
             val expectedFileContent = projectDirOutputFile.readText()
             // Perform Diff
-            DependencyListDiff.performDiff(
+            val diffResult = DependencyListDiff.performDiff(
                 projectPath = report.projectPath,
                 configurationName = report.configurationName,
                 expectedDependenciesFileContent = expectedFileContent,
-                actualDependenciesFileContent = reportContent,
-                errorHandler = errorHandler
+                actualDependenciesFileContent = reportContent
             )
+            if (diffResult is DependencyListDiffResult.DiffPerformed.HasDiff) {
+                // TODO Move this?  This prints the error in color
+                diffResult.printDiffInColor()
+            }
+            diffResult
         }
     }
 

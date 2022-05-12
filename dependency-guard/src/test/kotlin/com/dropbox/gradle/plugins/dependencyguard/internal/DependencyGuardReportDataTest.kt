@@ -1,15 +1,17 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import com.dropbox.gradle.plugins.dependencyguard.models.ArtifactDependency
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 
 import java.io.File
 
 internal class DependencyGuardReportDataTest {
     @Test
     fun `new library is added`() {
-        TestDelegate(DependencyGuardReportType.LIST).apply {
+        TestDelegate().apply {
 
             // Baseline Sample Report
             val report1 = SAMPLE_REPORT
@@ -29,7 +31,8 @@ internal class DependencyGuardReportDataTest {
                     )
                 },
             )
-            whenReportWritten(
+
+            val result: DependencyListDiffResult = whenReportWritten(
                 report = report2,
                 shouldBaseline = false,
             )
@@ -38,15 +41,20 @@ internal class DependencyGuardReportDataTest {
                 .isNotEqualTo(report1.reportForConfig())
             assertThat(report2.reportForConfig().lines().size)
                 .isEqualTo(report1.reportForConfig().lines().size + 1)
-            assertThat(errorMessages.size)
-                .isEqualTo(1)
-            assertThat(errorMessages[0]).contains("+ com.dropbox:focus:1.0.0")
+
+            when (result) {
+                is DependencyListDiffResult.DiffPerformed.HasDiff -> {
+                    assertThat(result.removedAndAddedLines.diffTextWithPlusAndMinus)
+                        .contains("+ com.dropbox:focus:1.0.0")
+                }
+                else -> fail("Did not expect $result")
+            }
         }
     }
 
     @Test
     fun `version upgrade of existing library`() {
-        TestDelegate(DependencyGuardReportType.LIST).apply {
+        TestDelegate().apply {
             val report1 = SAMPLE_REPORT.copy(
                 dependencies = listOf(
                     ArtifactDependency(
@@ -68,18 +76,23 @@ internal class DependencyGuardReportDataTest {
                 )
             )
             // Should cause error with the difference in versions
-            whenReportWritten(report = report2, shouldBaseline = false)
+            val result = whenReportWritten(report = report2, shouldBaseline = false)
 
-            assertThat(errorMessages.size)
-                .isEqualTo(1)
             assertThat(report2.reportForConfig())
                 .isNotEqualTo(report1.reportForConfig())
             assertThat(report2.reportForConfig().lines().size)
                 .isEqualTo(report1.reportForConfig().lines().size)
-            assertThat(errorMessages[0])
-                .contains("- com.dropbox:focus:1.0.0")
-            assertThat(errorMessages[0])
-                .contains("+ com.dropbox:focus:1.1.0")
+
+            when (result) {
+                is DependencyListDiffResult.DiffPerformed.HasDiff -> {
+                    val diffText = result.removedAndAddedLines.diffTextWithPlusAndMinus
+                    assertThat(diffText)
+                        .contains("- com.dropbox:focus:1.0.0")
+                    assertThat(diffText)
+                        .contains("+ com.dropbox:focus:1.1.0")
+                }
+                else -> fail("Did not expect $result")
+            }
         }
     }
 
@@ -131,23 +144,20 @@ internal class DependencyGuardReportDataTest {
             .isEmpty()
     }
 
-    private class TestDelegate(val reportType: DependencyGuardReportType) {
-        val errorMessages = mutableListOf<String>()
-        val errorHandler: (String) -> Unit = { errorMessages.add(it) }
-        private val buildDirOutputFile = File.createTempFile("buildDir", "")
-        private val projectDirOutputFile = File.createTempFile("projectDir", "")
+    private class TestDelegate {
+        private val buildDirOutputFile = File.createTempFile("buildDir", ".txt")
+        private val projectDirOutputFile = File.createTempFile("projectDir", ".txt")
         private val reportWriter = DependencyGuardListReportWriter(
             artifacts = true,
             modules = true,
         )
 
-        fun whenReportWritten(report: DependencyGuardReportData, shouldBaseline: Boolean) {
-            reportWriter.writeReport(
+        fun whenReportWritten(report: DependencyGuardReportData, shouldBaseline: Boolean): DependencyListDiffResult {
+            return reportWriter.writeReport(
                 buildDirOutputFile = buildDirOutputFile,
                 projectDirOutputFile = projectDirOutputFile,
                 report = report,
                 shouldBaseline = shouldBaseline,
-                errorHandler = errorHandler,
             )
         }
     }

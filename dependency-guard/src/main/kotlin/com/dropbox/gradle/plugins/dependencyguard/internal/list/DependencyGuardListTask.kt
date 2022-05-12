@@ -11,7 +11,7 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReport
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
-import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DifferenceResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.DefaultTask
@@ -101,7 +101,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
-                if (writeListReport(dependencyGuardConfig, report) is DifferenceResult.DiffPerformed.HasDifference) {
+                if (writeListReport(dependencyGuardConfig, report) is DependencyListDiffResult.DiffPerformed.HasDiff) {
                     dependencyChangesDetectedInConfigurations.add(report.configurationName)
                 }
             }
@@ -121,7 +121,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     private fun writeListReport(
         dependencyGuardConfig: DependencyGuardConfiguration,
         report: DependencyGuardReportData
-    ): DifferenceResult {
+    ): DependencyListDiffResult {
         val reportType = DependencyGuardReportType.LIST
         val reportWriter = DependencyGuardListReportWriter(
             artifacts = dependencyGuardConfig.artifacts,
@@ -139,8 +139,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
                 reportType = reportType,
             ),
             report = report,
-            shouldBaseline = shouldBaseline.get(),
-            errorHandler = { }
+            shouldBaseline = shouldBaseline.get()
         )
     }
 

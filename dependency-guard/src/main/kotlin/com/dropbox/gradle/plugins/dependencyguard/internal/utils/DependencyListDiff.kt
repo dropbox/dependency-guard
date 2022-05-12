@@ -13,56 +13,22 @@ internal object DependencyListDiff {
         configurationName: String,
         expectedDependenciesFileContent: String,
         actualDependenciesFileContent: String,
-        errorHandler: (String) -> Unit,
-    ): DifferenceResult.DiffPerformed {
-        // Compare
-        val expectedLines = expectedDependenciesFileContent.lines()
-        val difference: DifferenceResult.DiffPerformed =
-            compareAndAddPlusMinusPrefixes(expectedLines, actualDependenciesFileContent.lines())
+    ): DependencyListDiffResult.DiffPerformed {
+        // Compare Expected vs Actual
+        val removedAndAddedLines: RemovedAndAddedLines = compareAndAddPlusMinusPrefixes(
+            expected = expectedDependenciesFileContent.lines(),
+            actual = actualDependenciesFileContent.lines()
+        )
 
-        if (difference is DifferenceResult.DiffPerformed.HasDifference) {
-            val dependenciesChangedMessage =
-                """Dependencies Changed in "$projectPath" for configuration "$configurationName""""
-            val errorMessage = StringBuilder().apply {
-                appendLine(
-                    ColorTerminal.printlnColor(
-                        ColorTerminal.ANSI_YELLOW,
-                        dependenciesChangedMessage
-                    )
-                )
-
-                difference.differenceText.lines().forEach {
-                    appendLine(
-                        if (it.startsWith("-")) {
-                            ColorTerminal.printlnColor(ColorTerminal.ANSI_RED, it)
-                        } else if (it.startsWith("+")) {
-                            ColorTerminal.printlnColor(ColorTerminal.ANSI_GREEN, it)
-                        } else {
-                            it
-                        }
-                    )
-                }
-                appendLine(
-                    ColorTerminal.printlnColor(
-                        ColorTerminal.ANSI_RED,
-                        """
-                        
-                        If this is intentional, re-baseline using ./gradlew ${
-                            getQualifiedBaselineTaskForProjectPath(
-                                projectPath
-                            )
-                        }
-                        """.trimIndent()
-                    )
-                )
-            }.toString()
-            errorHandler(errorMessage)
-        } else {
-            println(
-                "No Dependency Changes Found in $projectPath for configuration \"$configurationName\""
+        return if (removedAndAddedLines.hasDifference) {
+            DependencyListDiffResult.DiffPerformed.HasDiff(
+                projectPath = projectPath,
+                configurationName = configurationName,
+                removedAndAddedLines = removedAndAddedLines,
             )
+        } else {
+            DependencyListDiffResult.DiffPerformed.NoDiff
         }
-        return difference
     }
 
     /**
@@ -71,19 +37,14 @@ internal object DependencyListDiff {
     private fun compareAndAddPlusMinusPrefixes(
         expected: List<String>,
         actual: List<String>
-    ): DifferenceResult.DiffPerformed {
+    ): RemovedAndAddedLines {
         val removedLines =
             expected.filter { !actual.contains(it) }
         val addedLines =
             actual.filter { !expected.contains(it) }
-
-        return if (removedLines.isEmpty() && addedLines.isEmpty()) {
-            DifferenceResult.DiffPerformed.NoDifference
-        } else {
-            DifferenceResult.DiffPerformed.HasDifference(
-                removedLines = removedLines,
-                addedLines = addedLines,
-            )
-        }
+        return RemovedAndAddedLines(
+            removedLines = removedLines,
+            addedLines = addedLines,
+        )
     }
 }
