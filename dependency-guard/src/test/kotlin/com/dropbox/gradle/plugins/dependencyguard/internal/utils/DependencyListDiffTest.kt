@@ -24,7 +24,7 @@ internal class DependencyListDiffTest {
 
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
-                val actual = result.createDiffMessage()
+                val actual = result.createDiffMessage(false)
 
                 val expected = StringBuilder().apply {
                     appendLine("""Dependencies Changed in : for configuration classpath""")
@@ -59,7 +59,7 @@ internal class DependencyListDiffTest {
 
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
-                val actual = result.createDiffMessage()
+                val actual = result.createDiffMessage(false)
                 val expected = StringBuilder().apply {
                     appendLine("""Dependencies Changed in :sample:app for configuration classpath""")
                     appendLine("- androidx.activity:activity:1.3.1")
