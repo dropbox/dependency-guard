@@ -31,7 +31,7 @@ internal object DependencyListDiff {
                     )
                 )
 
-                difference.differenceLinesText.lines().forEach {
+                difference.differenceText.lines().forEach {
                     appendLine(
                         if (it.startsWith("-")) {
                             ColorTerminal.printlnColor(ColorTerminal.ANSI_RED, it)
