@@ -21,7 +21,7 @@ dependencyGuard {
     // All dependencies included in Production Release APK
     configuration("releaseRuntimeClasspath") {
         modules = true
-        allowRule = {
+        allowedFilter = {
             // Disallow dependencies with a name containing "test"
             !it.contains("test")
         }

@@ -45,7 +45,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         return DependencyGuardReportData(
             projectPath = project.path,
             configurationName = configurationName,
-            allowRule = dependencyGuardConfiguration.allowRule,
+            allowedFilter = dependencyGuardConfiguration.allowedFilter,
             baselineMap = dependencyGuardConfiguration.baselineMap,
             dependencies = dependencies,
         )
@@ -145,7 +145,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
                 }
                 appendLine()
             }
-            appendLine("These dependencies are included and must be removed based on the configured 'allowRule'.")
+            appendLine("These dependencies are included and must be removed based on the configured 'allowedFilter'.")
             appendLine()
         }.toString()
 

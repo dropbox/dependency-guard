@@ -1,6 +1,5 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
-import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.models.ArtifactDependency
 import com.dropbox.gradle.plugins.dependencyguard.models.Dependency
 import com.dropbox.gradle.plugins.dependencyguard.models.ModuleDependency
@@ -9,7 +8,7 @@ internal data class DependencyGuardReportData(
     val projectPath: String,
     val configurationName: String,
     val dependencies: List<Dependency>,
-    val allowRule: (dependencyName: String) -> Boolean,
+    val allowedFilter: (dependencyName: String) -> Boolean,
     /**
      * Transform or remove (with null) dependencies in the baseline
      */
@@ -44,7 +43,7 @@ internal data class DependencyGuardReportData(
     }.toString()
 
     val disallowed: List<Dependency> = dependencies
-        .filter { !allowRule(it.name) }
+        .filter { !allowedFilter(it.name) }
         .distinct()
         .sortedBy { it.name }
 

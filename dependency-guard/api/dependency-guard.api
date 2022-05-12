@@ -1,13 +1,13 @@
 public class com/dropbox/gradle/plugins/dependencyguard/DependencyGuardConfiguration : org/gradle/api/Named {
 	public fun <init> (Ljava/lang/String;)V
-	public final fun getAllowRule ()Lkotlin/jvm/functions/Function1;
+	public final fun getAllowedFilter ()Lkotlin/jvm/functions/Function1;
 	public final fun getArtifacts ()Z
 	public final fun getBaselineMap ()Lkotlin/jvm/functions/Function1;
 	public final fun getConfigurationName ()Ljava/lang/String;
 	public final fun getModules ()Z
 	public fun getName ()Ljava/lang/String;
 	public final fun getTree ()Z
-	public final fun setAllowRule (Lkotlin/jvm/functions/Function1;)V
+	public final fun setAllowedFilter (Lkotlin/jvm/functions/Function1;)V
 	public final fun setArtifacts (Z)V
 	public final fun setBaselineMap (Lkotlin/jvm/functions/Function1;)V
 	public final fun setModules (Z)V

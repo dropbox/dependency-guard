@@ -37,12 +37,9 @@ public open class DependencyGuardConfiguration @Inject constructor(
 
     /**
      * Rule to determine if a dependency will be allowed.
-     *
-     * TODO: not sure how to model this as a task input. May not matter since the task that uses it
-     *  can never be up-to-date.
      */
     @get:Input
-    public var allowRule: (dependencyName: String) -> Boolean = { true }
+    public var allowedFilter: (dependencyName: String) -> Boolean = { true }
 
     /**
      * Modify a dependency name or remove it (by returning null) from the baseline file
