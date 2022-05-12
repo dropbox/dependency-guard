@@ -64,14 +64,9 @@ internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentRep
             asciiRenderer.render(configuration)
             asciiRenderer.completeConfiguration(configuration)
         }
-        ColorTerminal.printlnColor(
-            ColorTerminal.ANSI_YELLOW,
-            "Dependency Guard Tree baseline created for : for configuration classpath."
-        )
-        ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, "File: file://${outputFile!!.canonicalPath}")
     }
 
-    // USES INTERNAL API
+    // USES INTERNAL Gradle API - Issue: https://github.com/dropbox/dependency-guard/issues/25
     private fun reportGenerator(): ReportGenerator {
         return ReportGenerator(
             asciiRenderer,

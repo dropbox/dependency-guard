@@ -84,18 +84,20 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             configurationNames = dependencyGuardConfigurations.map { it.configurationName }
         )
 
-        val reports = mutableListOf<DependencyGuardReportData>()
-        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
-            val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
-            reports.add(report)
+        val reports = mutableListOf<DependencyGuardReportData>().apply {
+            dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
+                val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
+                add(report)
+            }
         }
 
         // Throw Error if any Disallowed Dependencies are Found
         val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
         if (reportsWithDisallowedDependencies.isNotEmpty()) {
-            throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
+            throwExceptionAboutDisallowedDependencies(reportsWithDisallowedDependencies)
         }
 
+        // Perform Diffs and Write Baselines
         val exceptionMessage = StringBuilder()
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
@@ -114,7 +116,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
                         println(diffResult.noDiffMessage)
                     }
                     is DependencyListDiffResult.BaselineCreated -> {
-                        // TODO Move messaging here.  Currently it is printed elsewhere.
+                        println(diffResult.baselineCreatedMessage(true))
                     }
                 }
 
@@ -154,7 +156,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         )
     }
 
-    private fun throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
+    private fun throwExceptionAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
         val errorMessage = StringBuilder().apply {
             reportsWithDisallowedDependencies.forEach { report ->
                 val disallowed = report.disallowed

@@ -19,7 +19,6 @@ internal class DependencyGuardListReportWriter(
         report: DependencyGuardReportData,
         shouldBaseline: Boolean,
     ): DependencyListDiffResult {
-        val type: DependencyGuardReportType = DependencyGuardReportType.LIST
         val reportContent = report.reportForConfig(
             artifacts = artifacts,
             modules = modules
@@ -29,14 +28,12 @@ internal class DependencyGuardListReportWriter(
 
         val projectDirOutputFileExists = projectDirOutputFile.exists()
         return if (shouldBaseline || !projectDirOutputFileExists) {
-            writeBaseline(
-                type = type,
-                content = reportContent,
+            projectDirOutputFile.writeText(reportContent)
+            return DependencyListDiffResult.BaselineCreated(
                 projectPath = report.projectPath,
                 configurationName = report.configurationName,
-                baselineFile = projectDirOutputFile
+                baselineFile = projectDirOutputFile,
             )
-            DependencyListDiffResult.BaselineCreated
         } else {
             val expectedFileContent = projectDirOutputFile.readText()
             // Perform Diff
@@ -48,25 +45,5 @@ internal class DependencyGuardListReportWriter(
             )
             diffResult
         }
-    }
-
-    private fun writeBaseline(
-        type: DependencyGuardReportType,
-        content: String,
-        projectPath: String,
-        configurationName: String,
-        baselineFile: File
-    ) {
-        // Write Baseline
-        ColorTerminal.printlnColor(
-            ColorTerminal.ANSI_YELLOW,
-            StringBuilder()
-                .apply {
-                    appendLine("Dependency Guard $type baseline created for $projectPath for configuration $configurationName.")
-                    appendLine("File: file://${baselineFile.canonicalPath}")
-                }
-                .toString()
-        )
-        baselineFile.writeText(content)
     }
 }

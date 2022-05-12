@@ -34,40 +34,40 @@ internal class DependencyGuardTreeDiffer(
         val generatedTree = readGeneratedFile()
             ?: throw GradleException("Tree should have been generated. Something went wrong.")
 
-        if (shouldBaseline) {
+        if (shouldBaseline || baseline == null) {
             writeBaselineFile(generatedTree)
+
+            ColorTerminal.printlnColor(
+                ColorTerminal.ANSI_YELLOW, "Dependency Guard Tree baseline created for : for configuration classpath."
+            )
+            ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, "File: file://${projectDirOutputFile.canonicalPath}")
         } else {
+            val diff = dependencyTreeDiff(baseline, generatedTree)
 
-            if (baseline == null) {
-                writeBaselineFile(generatedTree)
-            } else {
-                val diff = dependencyTreeDiff(baseline, generatedTree)
+            if (diff.isNotBlank()) {
+                val failureMessage =
+                    "***** DEPENDENCY CHANGE DETECTED *****"
+                ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, failureMessage)
 
-                if (diff.isNotBlank()) {
-                    val failureMessage =
-                        "***** DEPENDENCY CHANGE DETECTED *****"
-                    ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, failureMessage)
-
-                    // splitting string using lines() function
-                    diff.lines().forEach {
-                        val ansiColor = if (it.startsWith("-")) {
-                            ColorTerminal.ANSI_RED
-                        } else if (it.startsWith("+")) {
-                            ColorTerminal.ANSI_GREEN
-                        } else {
-                            null
-                        }
-                        ColorTerminal.printlnColor(ansiColor, it)
+                // splitting string using lines() function
+                diff.lines().forEach {
+                    val ansiColor = if (it.startsWith("-")) {
+                        ColorTerminal.ANSI_RED
+                    } else if (it.startsWith("+")) {
+                        ColorTerminal.ANSI_GREEN
+                    } else {
+                        null
                     }
-
-                    throw GradleException(
-                        StringBuilder().apply {
-                            appendLine(failureMessage)
-                            appendLine("Dependency Tree comparison to baseline does not match.")
-                            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
-                        }.toString()
-                    )
+                    ColorTerminal.printlnColor(ansiColor, it)
                 }
+
+                throw GradleException(
+                    StringBuilder().apply {
+                        appendLine(failureMessage)
+                        appendLine("Dependency Tree comparison to baseline does not match.")
+                        appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
+                    }.toString()
+                )
             }
         }
     }

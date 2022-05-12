@@ -1,10 +1,28 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineTaskForProjectPath
+import java.io.File
 
 internal sealed class DependencyListDiffResult {
+    internal class BaselineCreated(
+        projectPath: String,
+        configurationName: String,
+        baselineFile: File,
+    ) : DependencyListDiffResult() {
 
-    internal object BaselineCreated : DependencyListDiffResult()
+        private val baselineMessage = StringBuilder()
+            .apply {
+                appendLine("Dependency Guard baseline created for $projectPath for configuration $configurationName.")
+                appendLine("File: file://${baselineFile.canonicalPath}")
+            }
+            .toString()
+
+        fun baselineCreatedMessage(withColor: Boolean): String = if (withColor) {
+            ColorTerminal.colorify(ColorTerminal.ANSI_YELLOW, baselineMessage)
+        } else {
+            baselineMessage
+        }
+    }
 
     internal sealed class DiffPerformed : DependencyListDiffResult() {
 
