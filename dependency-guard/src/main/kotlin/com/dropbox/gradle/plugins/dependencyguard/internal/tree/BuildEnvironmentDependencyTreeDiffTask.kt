@@ -2,6 +2,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.Project
@@ -63,8 +64,11 @@ internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentRep
             asciiRenderer.render(configuration)
             asciiRenderer.completeConfiguration(configuration)
         }
-        println("Dependency Guard Tree baseline created for : for configuration classpath.")
-        println("File: ${outputFile!!.canonicalPath}")
+        ColorTerminal.printlnColor(
+            ColorTerminal.ANSI_YELLOW,
+            "Dependency Guard Tree baseline created for : for configuration classpath."
+        )
+        ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, "File: file://${outputFile!!.canonicalPath}")
     }
 
     // USES INTERNAL API

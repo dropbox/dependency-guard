@@ -77,7 +77,6 @@ internal class DependencyGuardTreeDiffer(
     private fun readBaselineFile(): String? = readFileContents(projectDirOutputFile)
 
     private fun writeBaselineFile(generatedTree: String) {
-        println("Created dependency tree baseline for ${project.displayName} for configuration $configurationName")
         projectDirOutputFile.writeText(generatedTree)
     }
 
