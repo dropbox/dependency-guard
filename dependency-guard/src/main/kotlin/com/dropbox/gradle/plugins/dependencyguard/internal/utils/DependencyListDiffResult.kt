@@ -8,7 +8,13 @@ internal sealed class DependencyListDiffResult {
 
     internal sealed class DiffPerformed : DependencyListDiffResult() {
 
-        internal object NoDiff : DiffPerformed()
+        internal class NoDiff(
+            projectPath: String,
+            configurationName: String,
+        ) : DiffPerformed() {
+            val noDiffMessage: String =
+                "No Dependency Changes Found in $projectPath for configuration \"$configurationName\""
+        }
 
         internal data class HasDiff(
             val projectPath: String,
@@ -16,25 +22,46 @@ internal sealed class DependencyListDiffResult {
             val removedAndAddedLines: RemovedAndAddedLines,
         ) : DiffPerformed() {
 
-            val dependenciesChangedMessage =
+            private val dependenciesChangedMessage =
                 """Dependencies Changed in $projectPath for configuration $configurationName"""
 
-            val rebaselineTaskName = getQualifiedBaselineTaskForProjectPath(projectPath)
+            private val rebaselineTaskName = getQualifiedBaselineTaskForProjectPath(projectPath)
 
-            val errorMessage = StringBuilder().apply {
+            private val rebaselineMessage =
+                """If this is intentional, re-baseline using ./gradlew $rebaselineTaskName""".trimIndent()
 
-            }.toString()
+            fun createDiffMessage(withColor: Boolean): String {
+                StringBuilder().apply {
+                    apply {
+                        appendLine(
+                            if (withColor) {
+                                ColorTerminal.colorify(ColorTerminal.ANSI_YELLOW, dependenciesChangedMessage)
+                            } else {
+                                dependenciesChangedMessage
+                            }
+                        )
+                        appendLine(
+                            if (withColor) {
+                                removedAndAddedLines.diffTextWithPlusAndMinusWithColor
+                            } else {
+                                removedAndAddedLines.diffTextWithPlusAndMinus
+                            }
+                        )
+                        appendLine(
+                            if (withColor) {
+                                ColorTerminal.colorify(ColorTerminal.ANSI_RED, rebaselineMessage)
+                            } else {
+                                rebaselineMessage
+                            }
+                        )
+                    }
+                }.toString()
 
-            // TODO Move this somewhere else?
-            fun printDiffInColor(): String {
                 val outputMessage = StringBuilder()
                 if (removedAndAddedLines.hasDifference) {
                     outputMessage.apply {
                         appendLine(
-                            ColorTerminal.printlnColor(
-                                ColorTerminal.ANSI_YELLOW,
-                                dependenciesChangedMessage
-                            )
+
                         )
 
                         removedAndAddedLines.diffTextWithPlusAndMinus.lines().forEach {

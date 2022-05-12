@@ -95,20 +95,34 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         if (reportsWithDisallowedDependencies.isNotEmpty()) {
             throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
         }
-        val errorMessage = StringBuilder()
+
+        val exceptionMessage = StringBuilder()
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
                 val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
-                if (diffResult is DependencyListDiffResult.DiffPerformed.HasDiff) {
-                    errorMessage.appendLine(
-                        diffResult.printDiffInColor()
-                    )
+                when (diffResult) {
+                    is DependencyListDiffResult.DiffPerformed.HasDiff -> {
+                        // Print to console in color
+                        println(diffResult.createDiffMessage(withColor = true))
+
+                        // Add to exception message without color
+                        exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
+                    }
+                    is DependencyListDiffResult.DiffPerformed.NoDiff -> {
+                        // Print no diff message
+                        println(diffResult.noDiffMessage)
+                    }
+                    is DependencyListDiffResult.BaselineCreated -> {
+                        // TODO Move messaging here.  Currently it is printed elsewhere.
+                    }
+                }
+
+                // If there was an exception message, throw an Exception with the message
+                if (exceptionMessage.toString().isNotEmpty()) {
+                    throw GradleException(exceptionMessage.toString())
                 }
             }
-        }
-        if (errorMessage.toString().isNotEmpty()) {
-            throw GradleException(errorMessage.toString())
         }
     }
 

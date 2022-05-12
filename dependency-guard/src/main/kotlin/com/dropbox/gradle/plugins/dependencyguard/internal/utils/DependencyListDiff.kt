@@ -1,7 +1,5 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
-import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineTaskForProjectPath
-
 internal object DependencyListDiff {
 
     /**
@@ -27,7 +25,10 @@ internal object DependencyListDiff {
                 removedAndAddedLines = removedAndAddedLines,
             )
         } else {
-            DependencyListDiffResult.DiffPerformed.NoDiff
+            DependencyListDiffResult.DiffPerformed.NoDiff(
+                projectPath = projectPath,
+                configurationName = configurationName,
+            )
         }
     }
 

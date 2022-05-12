@@ -6,7 +6,7 @@ internal data class RemovedAndAddedLines(
 ) {
     val hasDifference = removedLines.isNotEmpty() || addedLines.isNotEmpty()
 
-    val diffLines = mutableListOf<DiffLine>().apply {
+    private val diffLines = mutableListOf<DiffLine>().apply {
         removedLines.forEach {
             add(DiffLine(added = false, str = it))
         }
@@ -23,6 +23,20 @@ internal data class RemovedAndAddedLines(
                 "- "
             }
             appendLine(prefix + it.str)
+        }
+    }.toString()
+
+    val diffTextWithPlusAndMinusWithColor: String = StringBuilder().apply {
+        diffTextWithPlusAndMinus.lines().forEach {
+            appendLine(
+                if (it.startsWith("-")) {
+                    ColorTerminal.colorify(ColorTerminal.ANSI_RED, it)
+                } else if (it.startsWith("+")) {
+                    ColorTerminal.colorify(ColorTerminal.ANSI_GREEN, it)
+                } else {
+                    it
+                }
+            )
         }
     }.toString()
 }

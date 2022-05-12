@@ -23,7 +23,7 @@ internal object ColorTerminal {
         return str
     }
 
-    private fun colorify(ansiColor: String?, str: String): String = if (ansiColor != null) {
+    fun colorify(ansiColor: String?, str: String): String = if (ansiColor != null) {
         ansiColor + str + ANSI_RESET
     } else {
         str
