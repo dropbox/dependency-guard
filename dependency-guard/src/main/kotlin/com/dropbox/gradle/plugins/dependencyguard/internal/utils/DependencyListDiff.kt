@@ -5,21 +5,24 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineT
 internal object DependencyListDiff {
 
     /**
-     * @return Whether a diff was detected
+     * @return The detected difference, or null if there was none.
      */
     @Suppress("LongParameterList")
     fun performDiff(
         projectPath: String,
         configurationName: String,
-        expectedDependenciesFileContent:String,
+        expectedDependenciesFileContent: String,
         actualDependenciesFileContent: String,
         errorHandler: (String) -> Unit,
-    ): Boolean {
+    ): DifferenceResult.DiffPerformed {
         // Compare
         val expectedLines = expectedDependenciesFileContent.lines()
-        val difference = compare(expectedLines, actualDependenciesFileContent.lines())
-        if (difference.isNotBlank()) {
-            val dependenciesChangedMessage = """Dependencies Changed in "$projectPath" for configuration "$configurationName""""
+        val difference: DifferenceResult.DiffPerformed =
+            compareAndAddPlusMinusPrefixes(expectedLines, actualDependenciesFileContent.lines())
+
+        if (difference is DifferenceResult.DiffPerformed.HasDifference) {
+            val dependenciesChangedMessage =
+                """Dependencies Changed in "$projectPath" for configuration "$configurationName""""
             val errorMessage = StringBuilder().apply {
                 appendLine(
                     ColorTerminal.printlnColor(
@@ -27,7 +30,8 @@ internal object DependencyListDiff {
                         dependenciesChangedMessage
                     )
                 )
-                difference.lines().forEach {
+
+                difference.differenceLinesText.lines().forEach {
                     appendLine(
                         if (it.startsWith("-")) {
                             ColorTerminal.printlnColor(ColorTerminal.ANSI_RED, it)
@@ -42,47 +46,44 @@ internal object DependencyListDiff {
                     ColorTerminal.printlnColor(
                         ColorTerminal.ANSI_RED,
                         """
-                        $dependenciesChangedMessage
-                        If this is intentional, re-baseline using ./gradlew ${getQualifiedBaselineTaskForProjectPath(projectPath)}
+                        
+                        If this is intentional, re-baseline using ./gradlew ${
+                            getQualifiedBaselineTaskForProjectPath(
+                                projectPath
+                            )
+                        }
                         """.trimIndent()
                     )
                 )
             }.toString()
             errorHandler(errorMessage)
-            return true
         } else {
             println(
                 "No Dependency Changes Found in $projectPath for configuration \"$configurationName\""
             )
         }
-        return false
+        return difference
     }
 
-    private fun compare(expected: List<String>, actual: List<String>): String {
+    /**
+     * Return the difference String, or null if there was no difference
+     */
+    private fun compareAndAddPlusMinusPrefixes(
+        expected: List<String>,
+        actual: List<String>
+    ): DifferenceResult.DiffPerformed {
         val removedLines =
             expected.filter { !actual.contains(it) }
         val addedLines =
             actual.filter { !expected.contains(it) }
 
-        data class Line(val added: Boolean, val str: String)
-
-        val lines = mutableListOf<Line>()
-        removedLines.forEach {
-            lines.add(Line(added = false, str = it))
+        return if (removedLines.isEmpty() && addedLines.isEmpty()) {
+            DifferenceResult.DiffPerformed.NoDifference
+        } else {
+            DifferenceResult.DiffPerformed.HasDifference(
+                removedLines = removedLines,
+                addedLines = addedLines,
+            )
         }
-        addedLines.forEach {
-            lines.add(Line(added = true, str = it))
-        }
-
-        return StringBuilder().apply {
-            lines.sortedBy { it.str }.forEach {
-                val prefix = if (it.added) {
-                    "+ "
-                } else {
-                    "- "
-                }
-                appendLine(prefix + it.str)
-            }
-        }.toString()
     }
 }

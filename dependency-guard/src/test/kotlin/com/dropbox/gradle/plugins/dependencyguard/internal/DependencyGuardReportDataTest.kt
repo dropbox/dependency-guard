@@ -9,7 +9,7 @@ import java.io.File
 internal class DependencyGuardReportDataTest {
     @Test
     fun `new library is added`() {
-        TestDelegate(DependencyGuardReportType.ARTIFACT).apply {
+        TestDelegate(DependencyGuardReportType.LIST).apply {
 
             // Baseline Sample Report
             val report1 = SAMPLE_REPORT
@@ -46,7 +46,7 @@ internal class DependencyGuardReportDataTest {
 
     @Test
     fun `version upgrade of existing library`() {
-        TestDelegate(DependencyGuardReportType.ARTIFACT).apply {
+        TestDelegate(DependencyGuardReportType.LIST).apply {
             val report1 = SAMPLE_REPORT.copy(
                 dependencies = listOf(
                     ArtifactDependency(

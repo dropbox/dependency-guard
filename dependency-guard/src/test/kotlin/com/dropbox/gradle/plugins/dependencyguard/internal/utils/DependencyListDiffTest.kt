@@ -20,7 +20,9 @@ internal class DependencyListDiffTest {
             :sample:module2
             androidx.activity:activity:1.4.0
             """.trimIndent(),
-            errorHandler = { errorSb.append(it) }
+            errorHandler = {
+                errorSb.append(it)
+            }
         )
 
         val actual = errorSb.toString()
@@ -29,7 +31,7 @@ internal class DependencyListDiffTest {
             - androidx.activity:activity:1.3.1
             + androidx.activity:activity:1.4.0
             
-            Dependencies Changed in ":" for configuration "classpath"
+            
             If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline
             
             """.trimIndent()
@@ -42,7 +44,7 @@ internal class DependencyListDiffTest {
     fun performDiffTestModule() {
         val errorSb = StringBuilder()
 
-        DependencyListDiff.performDiff(
+        val diffResult: DifferenceResult.DiffPerformed = DependencyListDiff.performDiff(
             projectPath = ":sample:app",
             configurationName = "classpath",
             expectedDependenciesFileContent = """
@@ -53,7 +55,9 @@ internal class DependencyListDiffTest {
             :sample:module2
             androidx.activity:activity:1.4.0
             """.trimIndent(),
-            errorHandler = { errorSb.append(it) }
+            errorHandler = {
+                errorSb.append(it)
+            }
         )
 
         val actual = errorSb.toString()
@@ -62,13 +66,12 @@ internal class DependencyListDiffTest {
             - androidx.activity:activity:1.3.1
             + androidx.activity:activity:1.4.0
             
-            Dependencies Changed in ":sample:app" for configuration "classpath"
-            If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline
             
+            If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline
+
             """.trimIndent()
 
         assertThat(actual)
             .isEqualTo(expected)
     }
-
 }

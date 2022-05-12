@@ -3,8 +3,15 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.list
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
-import com.dropbox.gradle.plugins.dependencyguard.internal.*
+import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators.requirePluginConfig
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListReportWriter
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
+import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DifferenceResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.DefaultTask
@@ -23,7 +30,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
     }
 
-    private fun generateReport(
+    private fun generateReportForConfiguration(
         dependencyGuardConfiguration: DependencyGuardConfiguration
     ): DependencyGuardReportData {
         val configurationName = dependencyGuardConfiguration.configurationName
@@ -81,10 +88,11 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         val dependencyChangesDetectedInConfigurations = mutableListOf<String>()
         val reports = mutableListOf<DependencyGuardReportData>()
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
-            val report = generateReport(dependencyGuardConfig)
+            val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
             reports.add(report)
         }
 
+        // Throw Error if any Disallowed Dependencies are Found
         val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
         if (reportsWithDisallowedDependencies.isNotEmpty()) {
             throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
@@ -93,7 +101,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
-                if (writeListReport(dependencyGuardConfig, report)) {
+                if (writeListReport(dependencyGuardConfig, report) is DifferenceResult.DiffPerformed.HasDifference) {
                     dependencyChangesDetectedInConfigurations.add(report.configurationName)
                 }
             }
@@ -101,17 +109,20 @@ public abstract class DependencyGuardListTask : DefaultTask() {
 
         if (dependencyChangesDetectedInConfigurations.isNotEmpty()) {
             throwErrorAboutDetectedChanges(
-                DependencyGuardReportType.ALL,
+                DependencyGuardReportType.LIST,
                 dependencyChangesDetectedInConfigurations
             )
         }
     }
 
+    /**
+     * @return Whether changes were detected
+     */
     private fun writeListReport(
         dependencyGuardConfig: DependencyGuardConfiguration,
         report: DependencyGuardReportData
-    ): Boolean {
-        val reportType = DependencyGuardReportType.ALL
+    ): DifferenceResult {
+        val reportType = DependencyGuardReportType.LIST
         val reportWriter = DependencyGuardListReportWriter(
             artifacts = dependencyGuardConfig.artifacts,
             modules = dependencyGuardConfig.modules

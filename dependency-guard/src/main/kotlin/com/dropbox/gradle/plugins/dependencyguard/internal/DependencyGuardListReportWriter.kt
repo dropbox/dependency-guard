@@ -2,6 +2,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiff
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DifferenceResult
 import java.io.File
 
 internal class DependencyGuardListReportWriter(
@@ -18,8 +19,8 @@ internal class DependencyGuardListReportWriter(
         report: DependencyGuardReportData,
         shouldBaseline: Boolean,
         errorHandler: (String) -> Unit,
-    ): Boolean {
-        val type: DependencyGuardReportType = DependencyGuardReportType.ALL
+    ): DifferenceResult {
+        val type: DependencyGuardReportType = DependencyGuardReportType.LIST
         val reportContent = report.reportForConfig(
             artifacts = artifacts,
             modules = modules
@@ -36,7 +37,7 @@ internal class DependencyGuardListReportWriter(
                 configurationName = report.configurationName,
                 baselineFile = projectDirOutputFile
             )
-            false
+            DifferenceResult.BaselineCreated
         } else {
             val expectedFileContent = projectDirOutputFile.readText()
             // Perform Diff
