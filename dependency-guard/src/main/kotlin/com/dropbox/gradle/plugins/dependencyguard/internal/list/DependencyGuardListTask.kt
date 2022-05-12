@@ -10,7 +10,6 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReport
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
-import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
@@ -85,7 +84,6 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             configurationNames = dependencyGuardConfigurations.map { it.configurationName }
         )
 
-        val dependencyChangesDetectedInConfigurations = mutableListOf<String>()
         val reports = mutableListOf<DependencyGuardReportData>()
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
@@ -97,21 +95,20 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         if (reportsWithDisallowedDependencies.isNotEmpty()) {
             throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
         }
-
+        val errorMessage = StringBuilder()
         dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
-                if (writeListReport(dependencyGuardConfig, report) is DependencyListDiffResult.DiffPerformed.HasDiff) {
-                    dependencyChangesDetectedInConfigurations.add(report.configurationName)
+                val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
+                if (diffResult is DependencyListDiffResult.DiffPerformed.HasDiff) {
+                    errorMessage.appendLine(
+                        diffResult.printDiffInColor()
+                    )
                 }
             }
         }
-
-        if (dependencyChangesDetectedInConfigurations.isNotEmpty()) {
-            throwErrorAboutDetectedChanges(
-                DependencyGuardReportType.LIST,
-                dependencyChangesDetectedInConfigurations
-            )
+        if (errorMessage.toString().isNotEmpty()) {
+            throw GradleException(errorMessage.toString())
         }
     }
 
@@ -159,22 +156,6 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             appendLine()
         }.toString()
 
-        throw GradleException(errorMessage)
-    }
-
-    private fun throwErrorAboutDetectedChanges(
-        type: DependencyGuardReportType,
-        changesDetectedInConfigurations: List<String>
-    ) {
-        val errorMessage = StringBuilder().apply {
-            appendLine("$type change for ${project.path} for the following configurations:")
-            changesDetectedInConfigurations.forEach {
-                appendLine("* $it")
-            }
-            appendLine()
-            appendLine("$type comparison to baseline does not match.")
-            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
-        }.toString()
         throw GradleException(errorMessage)
     }
 

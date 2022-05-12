@@ -46,10 +46,6 @@ internal class DependencyGuardListReportWriter(
                 expectedDependenciesFileContent = expectedFileContent,
                 actualDependenciesFileContent = reportContent
             )
-            if (diffResult is DependencyListDiffResult.DiffPerformed.HasDiff) {
-                // TODO Move this?  This prints the error in color
-                diffResult.printDiffInColor()
-            }
             diffResult
         }
     }
