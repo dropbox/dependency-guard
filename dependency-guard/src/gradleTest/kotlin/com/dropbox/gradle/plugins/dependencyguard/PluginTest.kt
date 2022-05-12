@@ -44,7 +44,7 @@ class PluginTest {
     private fun validateBuild(project: SimpleProject, result: BuildResult) {
         // verify baseline
         assertThat(result.output)
-            .contains("Dependency Guard Dependency baseline created for :lib for configuration compileClasspath.")
+            .contains("Dependency Guard baseline created for :lib for configuration compileClasspath.")
 
         val baseline = project.projectFile("lib/dependencies/compileClasspath.txt")
         assertThat(baseline.exists()).isTrue()

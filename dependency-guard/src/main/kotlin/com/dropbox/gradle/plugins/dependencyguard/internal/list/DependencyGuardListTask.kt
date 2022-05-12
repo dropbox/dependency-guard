@@ -3,8 +3,14 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.list
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
-import com.dropbox.gradle.plugins.dependencyguard.internal.*
+import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators.requirePluginConfig
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListReportWriter
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
+import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.DefaultTask
@@ -23,7 +29,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
     }
 
-    private fun generateReport(
+    private fun generateReportForConfiguration(
         dependencyGuardConfiguration: DependencyGuardConfiguration
     ): DependencyGuardReportData {
         val configurationName = dependencyGuardConfiguration.configurationName
@@ -78,40 +84,58 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             configurationNames = dependencyGuardConfigurations.map { it.configurationName }
         )
 
-        val dependencyChangesDetectedInConfigurations = mutableListOf<String>()
-        val reports = mutableListOf<DependencyGuardReportData>()
-        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
-            val report = generateReport(dependencyGuardConfig)
-            reports.add(report)
-        }
-
-        val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
-        if (reportsWithDisallowedDependencies.isNotEmpty()) {
-            throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies)
-        }
-
-        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
-            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
-            report?.let {
-                if (writeListReport(dependencyGuardConfig, report)) {
-                    dependencyChangesDetectedInConfigurations.add(report.configurationName)
-                }
+        val reports = mutableListOf<DependencyGuardReportData>().apply {
+            dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
+                val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
+                add(report)
             }
         }
 
-        if (dependencyChangesDetectedInConfigurations.isNotEmpty()) {
-            throwErrorAboutDetectedChanges(
-                DependencyGuardReportType.ALL,
-                dependencyChangesDetectedInConfigurations
-            )
+        // Throw Error if any Disallowed Dependencies are Found
+        val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
+        if (reportsWithDisallowedDependencies.isNotEmpty()) {
+            throwExceptionAboutDisallowedDependencies(reportsWithDisallowedDependencies)
+        }
+
+        // Perform Diffs and Write Baselines
+        val exceptionMessage = StringBuilder()
+        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
+            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
+            report?.let {
+                val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
+                when (diffResult) {
+                    is DependencyListDiffResult.DiffPerformed.HasDiff -> {
+                        // Print to console in color
+                        println(diffResult.createDiffMessage(withColor = true))
+
+                        // Add to exception message without color
+                        exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
+                    }
+                    is DependencyListDiffResult.DiffPerformed.NoDiff -> {
+                        // Print no diff message
+                        println(diffResult.noDiffMessage)
+                    }
+                    is DependencyListDiffResult.BaselineCreated -> {
+                        println(diffResult.baselineCreatedMessage(true))
+                    }
+                }
+
+                // If there was an exception message, throw an Exception with the message
+                if (exceptionMessage.toString().isNotEmpty()) {
+                    throw GradleException(exceptionMessage.toString())
+                }
+            }
         }
     }
 
+    /**
+     * @return Whether changes were detected
+     */
     private fun writeListReport(
         dependencyGuardConfig: DependencyGuardConfiguration,
         report: DependencyGuardReportData
-    ): Boolean {
-        val reportType = DependencyGuardReportType.ALL
+    ): DependencyListDiffResult {
+        val reportType = DependencyGuardReportType.LIST
         val reportWriter = DependencyGuardListReportWriter(
             artifacts = dependencyGuardConfig.artifacts,
             modules = dependencyGuardConfig.modules
@@ -128,12 +152,11 @@ public abstract class DependencyGuardListTask : DefaultTask() {
                 reportType = reportType,
             ),
             report = report,
-            shouldBaseline = shouldBaseline.get(),
-            errorHandler = { }
+            shouldBaseline = shouldBaseline.get()
         )
     }
 
-    private fun throwErrorAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
+    private fun throwExceptionAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
         val errorMessage = StringBuilder().apply {
             reportsWithDisallowedDependencies.forEach { report ->
                 val disallowed = report.disallowed
@@ -149,22 +172,6 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             appendLine()
         }.toString()
 
-        throw GradleException(errorMessage)
-    }
-
-    private fun throwErrorAboutDetectedChanges(
-        type: DependencyGuardReportType,
-        changesDetectedInConfigurations: List<String>
-    ) {
-        val errorMessage = StringBuilder().apply {
-            appendLine("$type change for ${project.path} for the following configurations:")
-            changesDetectedInConfigurations.forEach {
-                appendLine("* $it")
-            }
-            appendLine()
-            appendLine("$type comparison to baseline does not match.")
-            appendLine("If this is a desired change, you can re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
-        }.toString()
         throw GradleException(errorMessage)
     }
 

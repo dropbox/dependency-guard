@@ -2,6 +2,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiff
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import java.io.File
 
 internal class DependencyGuardListReportWriter(
@@ -17,9 +18,7 @@ internal class DependencyGuardListReportWriter(
         projectDirOutputFile: File,
         report: DependencyGuardReportData,
         shouldBaseline: Boolean,
-        errorHandler: (String) -> Unit,
-    ): Boolean {
-        val type: DependencyGuardReportType = DependencyGuardReportType.ALL
+    ): DependencyListDiffResult {
         val reportContent = report.reportForConfig(
             artifacts = artifacts,
             modules = modules
@@ -29,44 +28,22 @@ internal class DependencyGuardListReportWriter(
 
         val projectDirOutputFileExists = projectDirOutputFile.exists()
         return if (shouldBaseline || !projectDirOutputFileExists) {
-            writeBaseline(
-                type = type,
-                content = reportContent,
+            projectDirOutputFile.writeText(reportContent)
+            return DependencyListDiffResult.BaselineCreated(
                 projectPath = report.projectPath,
                 configurationName = report.configurationName,
-                baselineFile = projectDirOutputFile
+                baselineFile = projectDirOutputFile,
             )
-            false
         } else {
             val expectedFileContent = projectDirOutputFile.readText()
             // Perform Diff
-            DependencyListDiff.performDiff(
+            val diffResult = DependencyListDiff.performDiff(
                 projectPath = report.projectPath,
                 configurationName = report.configurationName,
                 expectedDependenciesFileContent = expectedFileContent,
-                actualDependenciesFileContent = reportContent,
-                errorHandler = errorHandler
+                actualDependenciesFileContent = reportContent
             )
+            diffResult
         }
-    }
-
-    private fun writeBaseline(
-        type: DependencyGuardReportType,
-        content: String,
-        projectPath: String,
-        configurationName: String,
-        baselineFile: File
-    ) {
-        // Write Baseline
-        ColorTerminal.printlnColor(
-            ColorTerminal.ANSI_YELLOW,
-            StringBuilder()
-                .apply {
-                    appendLine("Dependency Guard $type baseline created for $projectPath for configuration $configurationName.")
-                    appendLine("File: ${baselineFile.canonicalPath}")
-                }
-                .toString()
-        )
-        baselineFile.writeText(content)
     }
 }

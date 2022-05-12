@@ -4,9 +4,7 @@ internal enum class DependencyGuardReportType(
     val reportTypeName: String,
     val fileSuffix: String
 ) {
-    ALL("Dependency", ""),
-    ARTIFACT("Artifact", ".artifacts"),
-    MODULE("Module", ".modules"),
+    LIST("Dependency", ""),
     TREE("Dependency Tree", ".tree");
 
     val filePrefix: String = ""

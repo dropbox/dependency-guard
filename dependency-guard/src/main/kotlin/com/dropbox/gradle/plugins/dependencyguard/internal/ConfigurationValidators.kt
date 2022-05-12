@@ -81,16 +81,18 @@ internal object ConfigurationValidators {
             target.configurations
                 .firstOrNull { it.name == configurationName }
                 ?: run {
-                    logger.quiet("Available Configurations:")
-                    target.configurations
+                    val availableClasspathConfigs = target.configurations
                         .filter {
                             isClasspathConfig(it.name)
                         }
-                        .forEach {
+                    if (availableClasspathConfigs.isNotEmpty()) {
+                        logger.quiet("Available Configurations for ${target.path}:")
+                        availableClasspathConfigs.forEach {
                             logger.quiet("* " + it.name)
                         }
+                    }
                     throw GradleException(
-                        "Configuration with name $configurationName was not found for ${target.name}"
+                        "Configuration with name $configurationName was not found for ${target.path}"
                     )
                 }
         }
