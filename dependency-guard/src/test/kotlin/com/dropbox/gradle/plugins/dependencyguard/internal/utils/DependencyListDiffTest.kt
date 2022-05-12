@@ -25,15 +25,14 @@ internal class DependencyListDiffTest {
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                 val actual = result.printDiffInColor()
-                val expected = """
-            Dependencies Changed in ":" for configuration "classpath"
-            - androidx.activity:activity:1.3.1
-            + androidx.activity:activity:1.4.0
-            
-            
-            If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline
-            
-            """.trimIndent()
+
+                val expected = StringBuilder().apply{
+                    appendLine("""Dependencies Changed in : for configuration classpath""")
+                    appendLine("- androidx.activity:activity:1.3.1")
+                    appendLine("+ androidx.activity:activity:1.4.0")
+                    appendLine()
+                    appendLine("If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline")
+                }.toString()
 
                 assertThat(actual)
                     .isEqualTo(expected)
@@ -58,19 +57,16 @@ internal class DependencyListDiffTest {
             """.trimIndent()
         )
 
-
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                 val actual = result.printDiffInColor()
-                val expected = """
-            Dependencies Changed in ":sample:app" for configuration "classpath"
-            - androidx.activity:activity:1.3.1
-            + androidx.activity:activity:1.4.0
-            
-            
-            If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline
-
-            """.trimIndent()
+                val expected = StringBuilder().apply{
+                    appendLine("""Dependencies Changed in :sample:app for configuration classpath""")
+                    appendLine("- androidx.activity:activity:1.3.1")
+                    appendLine("+ androidx.activity:activity:1.4.0")
+                    appendLine()
+                    appendLine("If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline")
+                }.toString()
 
                 assertThat(actual)
                     .isEqualTo(expected)
