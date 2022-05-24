@@ -37,6 +37,14 @@ public class DependencyGuardPlugin : Plugin<Project> {
             baselineTask = baselineTask,
             guardTask = guardTask
         )
+
+        // We shouldn't put this here, but I just wanted to register it somewhere to test
+        target.tasks.register(
+            "findUsages",
+            FindUsagesTask::class.java
+        ) {
+
+        }
     }
 
     private fun registerDependencyGuardBaselineTask(
