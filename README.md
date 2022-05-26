@@ -234,7 +234,7 @@ This task overwrites the dependencies in the `dependencies` directory in your mo
 
 ## Baseline Files
 
-Baseline files are created in the "dependency-guard" folder in your module.  The following reports are created for the `:sample:app` module by running `./gradlew :sample:app:dependencyGuardBaseline`
+Baseline files are created in the "dependencies" folder in your module.  The following reports are created for the `:sample:app` module by running `./gradlew :sample:app:dependencyGuardBaseline`
 
 ## Adding to the Buildscript Classpath
 
