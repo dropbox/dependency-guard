@@ -1,10 +1,19 @@
 # Change Log
 
+## Version 0.3.0
+
+_2022-05-26_
+
+See: [0.3.0 Milestone](https://github.com/dropbox/dependency-guard/milestone/2?closed=1)
+
+* Hook `dependencyGuard` task automatically into `check` task. by [@handstandsam](https://github.com/handstandsam) in [#30](https://github.com/dropbox/dependency-guard/issues/30)
+* Removed implementation dependencies of dependency-guard that aren't needed. [@handstandsam](https://github.com/handstandsam) in [#32](https://github.com/dropbox/dependency-guard/issues/32)
+
 ## Version 0.2.0
 
 _2022-05-12_
 
-See: https://github.com/dropbox/dependency-guard/milestone/1?closed=1
+See: [0.2.0 Milestone](https://github.com/dropbox/dependency-guard/milestone/1?closed=1)
 
 * **BREAKING CHANGE**: Renamed `allowRule` -> `allowedFilter` by [@handstandsam](https://github.com/handstandsam) in [#21](https://github.com/dropbox/dependency-guard/pull/21)
 * **BEHAVIOR CHANGE**: Set `artifacts=true` and `modules=false` as the default config. by [@handstandsam](https://github.com/handstandsam) in [#17](https://github.com/dropbox/dependency-guard/pull/17)
