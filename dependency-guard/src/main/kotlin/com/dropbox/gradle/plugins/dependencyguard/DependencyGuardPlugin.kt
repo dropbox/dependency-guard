@@ -1,13 +1,14 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyTreeDiffTaskNames
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.list.DependencyGuardListTask
 import com.dropbox.gradle.plugins.dependencyguard.internal.tree.BuildEnvironmentDependencyTreeDiffTask
 import com.dropbox.gradle.plugins.dependencyguard.internal.tree.DependencyTreeDiffTask
-import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 
 /**
  * A plugin for watching dependency changes
@@ -29,14 +30,29 @@ public class DependencyGuardPlugin : Plugin<Project> {
             target.objects
         )
 
-        val baselineTask = registerDependencyGuardBaselineTask(target, extension)
-        val guardTask = registerDependencyGuardTask(target, extension)
+        val dependencyGuardBaselineTask = registerDependencyGuardBaselineTask(target, extension)
+        val dependencyGuardTask = registerDependencyGuardTask(target, extension)
         registerTreeDiffTasks(
             target = target,
             extension = extension,
-            baselineTask = baselineTask,
-            guardTask = guardTask
+            baselineTask = dependencyGuardBaselineTask,
+            guardTask = dependencyGuardTask
         )
+
+        attachToCheckTask(
+            target = target,
+            dependencyGuardTask = dependencyGuardTask
+        )
+    }
+
+    private fun attachToCheckTask(target: Project, dependencyGuardTask: TaskProvider<DependencyGuardListTask>) {
+        // Required to add the "check" lifecycle task
+        target.plugins.apply(LifecycleBasePlugin::class.java)
+
+        // Attach the "dependencyGuard" task to the "check" lifecycle task
+        target.tasks.named(LifecycleBasePlugin.CHECK_TASK_NAME).configure {
+            this.dependsOn(dependencyGuardTask)
+        }
     }
 
     private fun registerDependencyGuardBaselineTask(
