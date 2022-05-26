@@ -61,8 +61,6 @@ mavenPublish {
 
 dependencies {
   compileOnly(gradleApi())
-  implementation(platform(libs.kotlin.bom))
-  implementation(libs.kotlin.plugin)
 }
 
 // Ensure build/gradleTest doesn't grow without bound when tests sometimes fail to clean up
