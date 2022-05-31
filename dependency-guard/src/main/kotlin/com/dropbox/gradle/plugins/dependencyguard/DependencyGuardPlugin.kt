@@ -47,7 +47,9 @@ public class DependencyGuardPlugin : Plugin<Project> {
 
     private fun attachToCheckTask(target: Project, dependencyGuardTask: TaskProvider<DependencyGuardListTask>) {
         // Required to add the "check" lifecycle task
-        target.plugins.apply(LifecycleBasePlugin::class.java)
+        if (target.plugins.hasPlugin(LifecycleBasePlugin::class.java)) {
+            target.plugins.apply(LifecycleBasePlugin::class.java)
+        }
 
         // Attach the "dependencyGuard" task to the "check" lifecycle task
         target.tasks.named(LifecycleBasePlugin.CHECK_TASK_NAME).configure {
