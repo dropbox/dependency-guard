@@ -10,7 +10,7 @@ internal object DependencyTreeDiffTaskNames {
      *
      * Fixes: https://github.com/dropbox/dependency-guard/issues/40
      */
-    private fun String.capitalized(): String {
+    fun String.capitalized(): String {
         return if (this.isEmpty()) {
             ""
         } else {
