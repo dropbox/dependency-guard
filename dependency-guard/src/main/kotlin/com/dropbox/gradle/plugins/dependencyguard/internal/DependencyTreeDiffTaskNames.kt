@@ -1,7 +1,5 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
-import org.gradle.configurationcache.extensions.capitalized
-
 internal object DependencyTreeDiffTaskNames {
 
     /**

@@ -1,9 +1,7 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyTreeDiffTaskNames.capitalized
-import org.gradle.configurationcache.extensions.capitalized
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class TaskNamesTest {
