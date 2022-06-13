@@ -1,5 +1,15 @@
 # Change Log
 
+## Version 0.3.1
+
+_2022-06-13_
+
+See: [0.3.1 Milestone](https://github.com/dropbox/dependency-guard/milestone/4?closed=1)
+
+* Fix: Tree format required Gradle 7.4 or higher. by [@handstandsam](https://github.com/handstandsam) in [#40](https://github.com/dropbox/dependency-guard/issues/40)
+* Fix: Crash while using in root project if clean task already applied. by [@ZacSweers](https://github.com/ZacSweers) in [#38](https://github.com/dropbox/dependency-guard/issues/38)
+
+
 ## Version 0.3.0
 
 _2022-05-26_
