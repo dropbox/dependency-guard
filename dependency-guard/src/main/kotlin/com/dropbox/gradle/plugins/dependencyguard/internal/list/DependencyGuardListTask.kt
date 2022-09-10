@@ -49,7 +49,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         val dependencies = DependencyVisitor.traverseDependenciesForConfiguration(config)
 
         return DependencyGuardReportData(
-            projectPath = project.path,
+            projectPath = projectPath.get(),
             configurationName = configurationName,
             allowedFilter = dependencyGuardConfiguration.allowedFilter,
             baselineMap = dependencyGuardConfiguration.baselineMap,
@@ -62,6 +62,9 @@ public abstract class DependencyGuardListTask : DefaultTask() {
 
     @get:Input
     public abstract val forRootProject: Property<Boolean>
+
+    @get:Input
+    public abstract val projectPath: Property<String>
 
     @get:Nested
     public abstract val monitoredConfigurations: ListProperty<DependencyGuardConfiguration>
@@ -154,7 +157,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             reportsWithDisallowedDependencies.forEach { report ->
                 val disallowed = report.disallowed
                 appendLine(
-                    """Disallowed Dependencies found in ${project.path} for the configuration "${report.configurationName}" """
+                    """Disallowed Dependencies found in ${projectPath.get()} for the configuration "${report.configurationName}" """
                 )
                 disallowed.forEach {
                     appendLine("\"${it.name}\",")
@@ -184,6 +187,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         )
 
         this.forRootProject.set(project.isRootProject())
+        this.projectPath.set(project.path)
         this.monitoredConfigurations.set(extension.configurations)
         this.shouldBaseline.set(shouldBaseline)
         this.buildDirectory.set(project.layout.buildDirectory)
