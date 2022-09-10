@@ -27,6 +27,8 @@ internal class DependencyGuardTreeDiffer(
         )
     }
 
+    private val projectPath = project.path
+
     @Suppress("NestedBlockDepth")
     fun performDiff() {
         val baseline: String? = readBaselineFile()
@@ -38,7 +40,7 @@ internal class DependencyGuardTreeDiffer(
 
             ColorTerminal.printlnColor(
                 ColorTerminal.ANSI_YELLOW,
-                "Dependency Guard Tree baseline created for ${project.path} for configuration $configurationName."
+                "Dependency Guard Tree baseline created for $projectPath for configuration $configurationName."
             )
             ColorTerminal.printlnColor(
                 ColorTerminal.ANSI_YELLOW,
