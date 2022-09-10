@@ -22,17 +22,17 @@ internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTas
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
-        this.doFirst {
-            ConfigurationValidators.validateConfigurationsAreAvailable(
-                project,
-                listOf(configurationName)
-            )
-        }
+
         this.doLast {
             dependencyGuardTreeDiffer.performDiff()
         }
     }
     override fun setParams(configurationName: String, shouldBaseline: Boolean) {
+        ConfigurationValidators.validateConfigurationsAreAvailable(
+            project,
+            listOf(configurationName)
+        )
+
         this.shouldBaseline = shouldBaseline
         this.configurationName = configurationName
         super.setConfiguration(configurationName)

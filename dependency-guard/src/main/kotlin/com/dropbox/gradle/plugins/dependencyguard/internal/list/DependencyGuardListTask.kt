@@ -69,10 +69,6 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     @TaskAction
     internal fun execute() {
         val dependencyGuardConfigurations = monitoredConfigurations.get()
-        ConfigurationValidators.validateConfigurationsAreAvailable(
-            target = project,
-            configurationNames = dependencyGuardConfigurations.map { it.configurationName }
-        )
 
         val reports = mutableListOf<DependencyGuardReportData>().apply {
             dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
@@ -174,6 +170,10 @@ public abstract class DependencyGuardListTask : DefaultTask() {
             isForRootProject = project.isRootProject(),
             availableConfigurations = project.configurations.map { it.name },
             monitoredConfigurations = extension.configurations.toList(),
+        )
+        ConfigurationValidators.validateConfigurationsAreAvailable(
+            target = project,
+            configurationNames = extension.configurations.map { it.configurationName }
         )
 
         this.forRootProject.set(project.isRootProject())

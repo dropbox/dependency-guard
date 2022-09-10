@@ -2,7 +2,6 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
-import com.dropbox.gradle.plugins.dependencyguard.internal.utils.ColorTerminal
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.Project
@@ -35,18 +34,18 @@ internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentRep
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
-        this.doFirst {
-            ConfigurationValidators.validateConfigurationsAreAvailable(
-                project,
-                listOf(configurationName)
-            )
-        }
+
         this.doLast {
             dependencyGuardTreeDiffer.performDiff()
         }
     }
 
     override fun setParams(configurationName: String, shouldBaseline: Boolean) {
+        ConfigurationValidators.validateConfigurationsAreAvailable(
+            project,
+            listOf(configurationName)
+        )
+
         this.shouldBaseline = shouldBaseline
         this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
 
