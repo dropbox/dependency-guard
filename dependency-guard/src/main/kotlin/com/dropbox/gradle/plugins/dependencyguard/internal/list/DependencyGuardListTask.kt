@@ -4,7 +4,6 @@ import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPluginExtension
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
-import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators.requirePluginConfig
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListReportWriter
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
@@ -63,21 +62,12 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     @get:Input
     public abstract val forRootProject: Property<Boolean>
 
-    @get:Input
-    public abstract val availableConfigurations: ListProperty<String>
-
     @get:Nested
     public abstract val monitoredConfigurations: ListProperty<DependencyGuardConfiguration>
 
     @Suppress("NestedBlockDepth")
     @TaskAction
     internal fun execute() {
-        requirePluginConfig(
-            isForRootProject = forRootProject.get(),
-            availableConfigurations = availableConfigurations.get(),
-            monitoredConfigurations = monitoredConfigurations.get()
-        )
-
         val dependencyGuardConfigurations = monitoredConfigurations.get()
         ConfigurationValidators.validateConfigurationsAreAvailable(
             target = project,
@@ -180,8 +170,13 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         extension: DependencyGuardPluginExtension,
         shouldBaseline: Boolean
     ) {
+        ConfigurationValidators.requirePluginConfig(
+            isForRootProject = project.isRootProject(),
+            availableConfigurations = project.configurations.map { it.name },
+            monitoredConfigurations = extension.configurations.toList(),
+        )
+
         this.forRootProject.set(project.isRootProject())
-        this.availableConfigurations.set(project.configurations.map { it.name })
         this.monitoredConfigurations.set(extension.configurations)
         this.shouldBaseline.set(shouldBaseline)
 
