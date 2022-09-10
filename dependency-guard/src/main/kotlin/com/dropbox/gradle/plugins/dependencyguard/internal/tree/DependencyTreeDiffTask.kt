@@ -4,21 +4,12 @@ import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
+import org.gradle.api.Project
 import org.gradle.api.tasks.diagnostics.DependencyReportTask
 
 internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTask {
 
-    private var configurationName: String = ""
-
-    private var shouldBaseline: Boolean = false
-
-    private val dependencyGuardTreeDiffer by lazy {
-        DependencyGuardTreeDiffer(
-            project = project,
-            configurationName = configurationName,
-            shouldBaseline = shouldBaseline,
-        )
-    }
+    private lateinit var dependencyGuardTreeDiffer: DependencyGuardTreeDiffer
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
@@ -27,15 +18,25 @@ internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTas
             dependencyGuardTreeDiffer.performDiff()
         }
     }
-    override fun setParams(configurationName: String, shouldBaseline: Boolean) {
+
+    override fun setParams(
+        project: Project,
+        configurationName: String,
+        shouldBaseline: Boolean,
+    ) {
         ConfigurationValidators.validateConfigurationsAreAvailable(
             project,
             listOf(configurationName)
         )
 
-        this.shouldBaseline = shouldBaseline
-        this.configurationName = configurationName
         super.setConfiguration(configurationName)
+
+        this.dependencyGuardTreeDiffer = DependencyGuardTreeDiffer(
+            project = project,
+            configurationName = configurationName,
+            shouldBaseline = shouldBaseline,
+        )
+
         this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
 
         declareCompatibilities()

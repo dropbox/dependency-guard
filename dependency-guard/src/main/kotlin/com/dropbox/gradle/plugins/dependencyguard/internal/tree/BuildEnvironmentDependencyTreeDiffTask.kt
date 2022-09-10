@@ -13,24 +13,15 @@ import org.gradle.api.tasks.diagnostics.internal.ReportGenerator
 import org.gradle.api.tasks.diagnostics.internal.dependencies.AsciiDependencyReportRenderer
 import java.io.File
 
-internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentReportTask(), TreeDiffTask {
-
-    private val configurationName: String = ScriptHandler.CLASSPATH_CONFIGURATION
-
-    private var shouldBaseline: Boolean = false
+internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentReportTask(),
+    TreeDiffTask {
 
     private var outputFile: File? = null
 
     // USES INTERNAL API
     private val asciiRenderer: DependencyReportRenderer = AsciiDependencyReportRenderer()
 
-    private val dependencyGuardTreeDiffer by lazy {
-        DependencyGuardTreeDiffer(
-            project = project,
-            configurationName = configurationName,
-            shouldBaseline = shouldBaseline,
-        )
-    }
+    private lateinit var dependencyGuardTreeDiffer: DependencyGuardTreeDiffer
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
@@ -40,13 +31,21 @@ internal open class BuildEnvironmentDependencyTreeDiffTask : BuildEnvironmentRep
         }
     }
 
-    override fun setParams(configurationName: String, shouldBaseline: Boolean) {
+    override fun setParams(
+        project: Project,
+        configurationName: String,
+        shouldBaseline: Boolean,
+    ) {
         ConfigurationValidators.validateConfigurationsAreAvailable(
             project,
             listOf(configurationName)
         )
 
-        this.shouldBaseline = shouldBaseline
+        this.dependencyGuardTreeDiffer = DependencyGuardTreeDiffer(
+            project = project,
+            configurationName = ScriptHandler.CLASSPATH_CONFIGURATION,
+            shouldBaseline = shouldBaseline,
+        )
         this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
 
         declareCompatibilities()

@@ -6,26 +6,22 @@ import org.gradle.api.Project
 import java.io.File
 
 internal class DependencyGuardTreeDiffer(
-    private val project: Project,
+    project: Project,
     private val configurationName: String,
     private val shouldBaseline: Boolean,
 ) {
 
-    private val projectDirOutputFile: File by lazy {
-        OutputFileUtils.projectDirOutputFile(
-            project = project,
-            configurationName = configurationName,
-            reportType = DependencyGuardReportType.TREE,
-        )
-    }
+    private val projectDirOutputFile: File = OutputFileUtils.projectDirOutputFile(
+        projectDirectory = project.layout.projectDirectory,
+        configurationName = configurationName,
+        reportType = DependencyGuardReportType.TREE,
+    )
 
-    val buildDirOutputFile: File by lazy {
-        OutputFileUtils.buildDirOutputFile(
-            project = project,
-            configurationName = configurationName,
-            reportType = DependencyGuardReportType.TREE,
-        )
-    }
+    val buildDirOutputFile: File = OutputFileUtils.buildDirOutputFile(
+        buildDirectory = project.layout.buildDirectory.get(),
+        configurationName = configurationName,
+        reportType = DependencyGuardReportType.TREE,
+    )
 
     private val projectPath = project.path
 
@@ -64,7 +60,6 @@ internal class DependencyGuardTreeDiffer(
                     ColorTerminal.printlnColor(ansiColor, it)
                 }
 
-                val projectPath = project.path
                 throw GradleException(
                     StringBuilder().apply {
                         appendLine(Messaging.dependencyChangeDetected)

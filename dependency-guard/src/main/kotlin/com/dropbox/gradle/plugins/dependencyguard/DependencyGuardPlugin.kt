@@ -111,6 +111,7 @@ public class DependencyGuardPlugin : Plugin<Project> {
                     taskClass
                 ) {
                     setParams(
+                        project = target,
                         configurationName = dependencyGuardConfiguration.configurationName,
                         shouldBaseline = false
                     )
@@ -126,6 +127,7 @@ public class DependencyGuardPlugin : Plugin<Project> {
                     taskClass
                 ) {
                     setParams(
+                        project = target,
                         configurationName = dependencyGuardConfiguration.configurationName,
                         shouldBaseline = true
                     )

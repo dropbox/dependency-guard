@@ -15,6 +15,7 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCo
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.initialization.dsl.ScriptHandler
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -64,6 +65,12 @@ public abstract class DependencyGuardListTask : DefaultTask() {
 
     @get:Nested
     public abstract val monitoredConfigurations: ListProperty<DependencyGuardConfiguration>
+
+    @get:Input
+    public abstract val buildDirectory: DirectoryProperty
+
+    @get:Input
+    public abstract val projectDirectory: DirectoryProperty
 
     @Suppress("NestedBlockDepth")
     @TaskAction
@@ -128,12 +135,12 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         )
         return reportWriter.writeReport(
             buildDirOutputFile = OutputFileUtils.buildDirOutputFile(
-                project = project,
+                buildDirectory = buildDirectory.get(),
                 configurationName = report.configurationName,
                 reportType = reportType,
             ),
             projectDirOutputFile = OutputFileUtils.projectDirOutputFile(
-                project = project,
+                projectDirectory = projectDirectory.get(),
                 configurationName = report.configurationName,
                 reportType = reportType,
             ),
@@ -179,6 +186,8 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         this.forRootProject.set(project.isRootProject())
         this.monitoredConfigurations.set(extension.configurations)
         this.shouldBaseline.set(shouldBaseline)
+        this.buildDirectory.set(project.layout.buildDirectory)
+        this.projectDirectory.set(project.layout.projectDirectory)
 
         declareCompatibilities()
     }
