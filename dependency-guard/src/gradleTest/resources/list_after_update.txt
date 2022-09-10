@@ -1,0 +1,2 @@
+io.reactivex.rxjava3:rxjava:3.1.5
+org.reactivestreams:reactive-streams:1.0.4

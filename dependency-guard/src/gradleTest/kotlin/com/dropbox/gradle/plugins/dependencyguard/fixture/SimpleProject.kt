@@ -10,6 +10,9 @@ class SimpleProject : AbstractProject() {
   private val settingsFile = projectDir.resolve("settings.gradle")
   private val rootBuildFile = projectDir.resolve("build.gradle")
 
+  // Generate java library project named 'lib'
+  val lib = minimalLibrary("lib")
+
   init {
     gradlePropertiesFile.writeText(
       """
@@ -38,9 +41,6 @@ class SimpleProject : AbstractProject() {
       include ':lib'
       """.trimIndent()
     )
-
-    // Generate java library project named 'lib'
-    val lib = minimalLibrary("lib")
   }
 
   private fun minimalLibrary(name: String): Path {
@@ -54,7 +54,7 @@ class SimpleProject : AbstractProject() {
       }
       
       dependencies {
-        implementation 'commons-io:commons-io:2.11.0' 
+        implementation 'io.reactivex.rxjava3:rxjava:3.1.4'
       }
       
       dependencyGuard {
