@@ -3,14 +3,14 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 import com.dropbox.gradle.plugins.dependencyguard.models.ArtifactDependency
 import com.dropbox.gradle.plugins.dependencyguard.models.Dependency
 import com.dropbox.gradle.plugins.dependencyguard.models.ModuleDependency
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 
 internal object DependencyVisitor {
 
-    fun ResolvedDependencyResult.toDep(): Dependency? {
+    private fun ResolvedDependencyResult.toDep(): Dependency? {
         return when (val componentIdentifier = selected.id) {
             is ProjectComponentIdentifier -> ModuleDependency(
                 path = componentIdentifier.projectPath,
@@ -49,9 +49,7 @@ internal object DependencyVisitor {
         }
     }
 
-    fun traverseDependenciesForConfiguration(config: Configuration): List<Dependency> {
-        val incomingResolvableDependencies = config.incoming
-        val resolvedComponentResult = incomingResolvableDependencies.resolutionResult.root
+    fun traverseComponentDependencies(resolvedComponentResult: ResolvedComponentResult): List<Dependency> {
         val firstLevelDependencies = resolvedComponentResult
             .dependencies
             .filterIsInstance<ResolvedDependencyResult>()

@@ -15,12 +15,11 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCo
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.initialization.dsl.ScriptHandler
-import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
 
 public abstract class DependencyGuardListTask : DefaultTask() {
@@ -30,23 +29,12 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     }
 
     private fun generateReportForConfiguration(
-        dependencyGuardConfiguration: DependencyGuardConfiguration
+        dependencyGuardConfiguration: DependencyGuardConfiguration,
+        resolvedComponentResult: ResolvedComponentResult,
     ): DependencyGuardReportData {
         val configurationName = dependencyGuardConfiguration.configurationName
 
-        var config = project.configurations.firstOrNull { it.name == configurationName }
-
-        if (config == null) {
-            if (forRootProject.get()) {
-                // Assuming this is the root project
-                config = project.buildscript.configurations.findByName(ScriptHandler.CLASSPATH_CONFIGURATION)
-            }
-            if (config == null) {
-                throw GradleException("Could not find $configurationName in ${project.path}")
-            }
-        }
-
-        val dependencies = DependencyVisitor.traverseDependenciesForConfiguration(config)
+        val dependencies = DependencyVisitor.traverseComponentDependencies(resolvedComponentResult)
 
         return DependencyGuardReportData(
             projectPath = projectPath.get(),
@@ -66,8 +54,8 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     @get:Input
     public abstract val projectPath: Property<String>
 
-    @get:Nested
-    public abstract val monitoredConfigurations: ListProperty<DependencyGuardConfiguration>
+    @get:Input
+    public abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, ResolvedComponentResult>
 
     @get:Input
     public abstract val buildDirectory: DirectoryProperty
@@ -78,14 +66,9 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     @Suppress("NestedBlockDepth")
     @TaskAction
     internal fun execute() {
-        val dependencyGuardConfigurations = monitoredConfigurations.get()
+        val dependencyGuardConfigurations = monitoredConfigurationsMap.get()
 
-        val reports = mutableListOf<DependencyGuardReportData>().apply {
-            dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
-                val report: DependencyGuardReportData = generateReportForConfiguration(dependencyGuardConfig)
-                add(report)
-            }
-        }
+        val reports = dependencyGuardConfigurations.map { generateReportForConfiguration(it.key, it.value) }
 
         // Throw Error if any Disallowed Dependencies are Found
         val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
@@ -95,7 +78,7 @@ public abstract class DependencyGuardListTask : DefaultTask() {
 
         // Perform Diffs and Write Baselines
         val exceptionMessage = StringBuilder()
-        dependencyGuardConfigurations.forEach { dependencyGuardConfig ->
+        dependencyGuardConfigurations.keys.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
                 val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
@@ -188,11 +171,28 @@ public abstract class DependencyGuardListTask : DefaultTask() {
 
         this.forRootProject.set(project.isRootProject())
         this.projectPath.set(project.path)
-        this.monitoredConfigurations.set(extension.configurations)
+        this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
         this.buildDirectory.set(project.layout.buildDirectory)
         this.projectDirectory.set(project.layout.projectDirectory)
 
         declareCompatibilities()
+    }
+
+    private fun resolveMonitoredConfigurationsMap(
+        project: Project,
+        monitoredConfigurations: Collection<DependencyGuardConfiguration>,
+    ): Map<DependencyGuardConfiguration, ResolvedComponentResult> {
+        val configurationContainer = if (project.isRootProject()) {
+            project.buildscript.configurations
+        } else {
+            project.configurations
+        }
+        return monitoredConfigurations.associateWith {
+            configurationContainer.getByName(it.configurationName)
+                .incoming
+                .resolutionResult
+                .root
+        }
     }
 }
