@@ -2,6 +2,7 @@ package com.dropbox.gradle.plugins.dependencyguard
 
 import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder.build
 import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder.buildAndFail
+import com.dropbox.gradle.plugins.dependencyguard.fixture.ConfiguredProject
 import com.dropbox.gradle.plugins.dependencyguard.fixture.FullProject
 import com.dropbox.gradle.plugins.dependencyguard.fixture.SimpleProject
 import com.dropbox.gradle.plugins.dependencyguard.util.assertFileExistsWithContentEqual
@@ -195,5 +196,32 @@ class PluginTest {
         // verify configuration cache is supported
         assertThat(result.output).contains("Calculating task graph as no configuration cache is available for tasks: dependencyGuard")
         assertThat(result.output).contains("Configuration cache entry stored.")
+    }
+
+    @Test
+    fun `prints error when no configuration found`(): Unit = ConfiguredProject(
+        configurations = emptyList(),
+    ).use { project ->
+        val result = buildAndFail(
+            project = project,
+            args = arrayOf(":lib:dependencyGuard")
+        )
+
+        assertThat(result.output).contains("Error: No configurations provided to Dependency Guard Plugin.")
+    }
+
+    @Test
+    fun `prints error when wrong configuration found`(): Unit = ConfiguredProject(
+        configurations = listOf(
+            "compileClasspath",
+            "releaseCompileClasspath",
+        ),
+    ).use { project ->
+        val result = buildAndFail(
+            project = project,
+            args = arrayOf(":lib:dependencyGuard")
+        )
+
+        assertThat(result.output).contains("Configuration with name releaseCompileClasspath was not found for :lib")
     }
 }
