@@ -4,7 +4,9 @@ import com.dropbox.gradle.plugins.dependencyguard.util.createDirectories
 import com.dropbox.gradle.plugins.dependencyguard.util.writeText
 import java.nio.file.Path
 
-class SimpleProject : AbstractProject() {
+class SimpleProject(
+    private val tree: Boolean = true,
+) : AbstractProject() {
 
   private val gradlePropertiesFile = projectDir.resolve("gradle.properties")
   private val settingsFile = projectDir.resolve("settings.gradle")
@@ -59,7 +61,7 @@ class SimpleProject : AbstractProject() {
       
       dependencyGuard {
         configuration('compileClasspath') {
-          tree = true
+          tree = $tree
         }
       }
       """.trimIndent()

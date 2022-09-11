@@ -66,7 +66,48 @@ class PluginTest {
     }
 
     @Test
-    fun `guard after dependencies changes`(): Unit = SimpleProject().use { project ->
+    fun `guard after dependencies tree changes`(): Unit = SimpleProject().use { project ->
+        // create baseline
+        build(
+            project = project,
+            args = arrayOf(":lib:dependencyGuard")
+        )
+
+        project.lib.resolve("build.gradle").replaceText(
+            oldValue = "implementation 'io.reactivex.rxjava3:rxjava:3.1.4'",
+            newValue = "implementation 'io.reactivex.rxjava3:rxjava:3.1.5'",
+        )
+
+        // check after dependencies changes
+        val result = buildAndFail(
+            project = project,
+            args = arrayOf(":lib:dependencyGuard")
+        )
+
+        assertThat(result.output).contains("Dependency Tree comparison to baseline does not match.")
+        assertThat(result.output).contains(
+            """
+    [33m***** DEPENDENCY CHANGE DETECTED *****[0m
+    [31m-\--- io.reactivex.rxjava3:rxjava:3.1.4[0m
+    [31m-     \--- org.reactivestreams:reactive-streams:1.0.3[0m
+    [32m+\--- io.reactivex.rxjava3:rxjava:3.1.5[0m
+    [32m+     \--- org.reactivestreams:reactive-streams:1.0.4[0m
+        """.trimIndent()
+        )
+
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.txt",
+            contentFile = "list_before_update.txt",
+        )
+
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.tree.txt",
+            contentFile = "tree_before_update.txt",
+        )
+    }
+
+    @Test
+    fun `guard after dependencies list changes`(): Unit = SimpleProject(tree = false).use { project ->
         // create baseline
         build(
             project = project,
@@ -100,11 +141,6 @@ class PluginTest {
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
             contentFile = "list_before_update.txt",
-        )
-
-        project.assertFileExistsWithContentEqual(
-            filename = "lib/dependencies/compileClasspath.tree.txt",
-            contentFile = "tree_before_update.txt",
         )
     }
 
