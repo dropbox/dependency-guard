@@ -46,7 +46,7 @@ object Builder {
     withPluginClasspath()
     withGradleVersion(gradleVersion.version)
     withProjectDir(projectDir.toFile())
-    withArguments(args.toList() + "-s")
+    withArguments(args.toList() + "-s" + "--configuration-cache")
     // Ensure this value is true when `--debug-jvm` is passed to Gradle, and false otherwise
     withDebug(getRuntimeMXBean().inputArguments.toString().indexOf("-agentlib:jdwp") > 0)
   }

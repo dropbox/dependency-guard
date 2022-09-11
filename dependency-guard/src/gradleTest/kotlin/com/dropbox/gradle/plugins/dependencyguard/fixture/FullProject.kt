@@ -50,7 +50,7 @@ class FullProject : AbstractProject() {
             
             dependencyGuard {
                 configuration('classpath') {
-                    tree = false
+                    tree = true
                 }
             }
             """.trimIndent()
