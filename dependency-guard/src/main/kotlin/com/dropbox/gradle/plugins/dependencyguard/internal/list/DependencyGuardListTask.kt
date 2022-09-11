@@ -24,7 +24,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
-public abstract class DependencyGuardListTask : DefaultTask() {
+internal abstract class DependencyGuardListTask : DefaultTask() {
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
@@ -48,22 +48,22 @@ public abstract class DependencyGuardListTask : DefaultTask() {
     }
 
     @get:Input
-    public abstract val shouldBaseline: Property<Boolean>
+    abstract val shouldBaseline: Property<Boolean>
 
     @get:Input
-    public abstract val forRootProject: Property<Boolean>
+    abstract val forRootProject: Property<Boolean>
 
     @get:Input
-    public abstract val projectPath: Property<String>
+    abstract val projectPath: Property<String>
 
     @get:Input
-    public abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, ResolvedComponentResult>
+    abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, ResolvedComponentResult>
 
     @get:Input
-    public abstract val buildDirectory: DirectoryProperty
+    abstract val buildDirectory: DirectoryProperty
 
     @get:Input
-    public abstract val projectDirectory: DirectoryProperty
+    abstract val projectDirectory: DirectoryProperty
 
     @Suppress("NestedBlockDepth")
     @TaskAction
