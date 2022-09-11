@@ -1,9 +1,7 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyTreeDiffTaskNames
-import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.list.DependencyGuardListTask
-import com.dropbox.gradle.plugins.dependencyguard.internal.tree.BuildEnvironmentDependencyTreeDiffTask
 import com.dropbox.gradle.plugins.dependencyguard.internal.tree.DependencyTreeDiffTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -98,11 +96,7 @@ public class DependencyGuardPlugin : Plugin<Project> {
         extension.configurations.all {
             val dependencyGuardConfiguration = this
             if (dependencyGuardConfiguration.tree) {
-                val taskClass = if (target.isRootProject()) {
-                    BuildEnvironmentDependencyTreeDiffTask::class.java
-                } else {
-                    DependencyTreeDiffTask::class.java
-                }
+                val taskClass = DependencyTreeDiffTask::class.java
 
                 val treeGuardTask = target.tasks.register(
                     DependencyTreeDiffTaskNames.createDependencyTreeTaskNameForConfiguration(

@@ -8,7 +8,9 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardListRe
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportData
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyVisitor
+import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
+import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
@@ -183,16 +185,10 @@ public abstract class DependencyGuardListTask : DefaultTask() {
         project: Project,
         monitoredConfigurations: Collection<DependencyGuardConfiguration>,
     ): Map<DependencyGuardConfiguration, ResolvedComponentResult> {
-        val configurationContainer = if (project.isRootProject()) {
-            project.buildscript.configurations
-        } else {
-            project.configurations
-        }
+        val configurationContainer = project.projectConfigurations
+
         return monitoredConfigurations.associateWith {
-            configurationContainer.getByName(it.configurationName)
-                .incoming
-                .resolutionResult
-                .root
+            configurationContainer.getResolvedComponentResult(it.configurationName)
         }
     }
 }
