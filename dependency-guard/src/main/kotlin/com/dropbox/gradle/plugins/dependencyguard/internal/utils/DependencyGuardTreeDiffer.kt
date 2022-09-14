@@ -38,9 +38,13 @@ internal class DependencyGuardTreeDiffer(
             writeBaselineFile(generatedTree)
 
             ColorTerminal.printlnColor(
-                ColorTerminal.ANSI_YELLOW, "Dependency Guard Tree baseline created for : for configuration classpath."
+                ColorTerminal.ANSI_YELLOW,
+                "Dependency Guard Tree baseline created for ${project.path} for configuration $configurationName."
             )
-            ColorTerminal.printlnColor(ColorTerminal.ANSI_YELLOW, "File: file://${projectDirOutputFile.canonicalPath}")
+            ColorTerminal.printlnColor(
+                ColorTerminal.ANSI_YELLOW,
+                "File: file://${projectDirOutputFile.canonicalPath}"
+            )
         } else {
             val diff = dependencyTreeDiff(baseline, generatedTree)
 
