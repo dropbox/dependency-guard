@@ -5,7 +5,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 /**
  * Original Source:
  *
- * https://github.com/JakeWharton/dependency-tree-diff/blob/2548d3e95aa709c2c2b95ed61241a49bfadddd72/src/main/kotlin/com/jakewharton/gradle/dependencies/treeDiff.kt
+ * https://github.com/JakeWharton/dependency-tree-diff/blob/4e86e45bbb032535d8106aec2811399f4bce7b49/src/main/kotlin/com/jakewharton/gradle/dependencies/treeDiff.kt
  */
 
 @JvmName("diff")
@@ -22,8 +22,8 @@ internal fun dependencyTreeDiff(old: String, new: String): String {
 }
 
 private fun findDependencyPaths(text: String): Set<List<String>> {
-    val dependencyLines = text.split('\n')
-        .dropWhile { !it.startsWith("+--- ") }
+    val dependencyLines = text.lines()
+        .dropWhile { !it.startsWith("+--- ") && !it.startsWith("\\---") }
         .takeWhile { it.isNotEmpty() }
 
     val dependencyPaths = mutableSetOf<List<String>>()
