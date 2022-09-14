@@ -1,5 +1,15 @@
 # Change Log
 
+## Version 0.3.2
+
+_2022-09-14_
+
+See: [0.3.2 Milestone](https://github.com/dropbox/dependency-guard/milestone/5?closed=1)
+
+* Fix "baseline created" message in DependencyGuardTreeDiffer by [@handstandsam](https://github.com/handstandsam) in [#49](https://github.com/dropbox/dependency-guard/pull/49)
+* Fix: Update to latest dependency-tree-diff source code which has fixes by [@qwert2603](https://github.com/qwert2603) in [#47](https://github.com/dropbox/dependency-guard/pull/47)
+
+
 ## Version 0.3.1
 
 _2022-06-13_
