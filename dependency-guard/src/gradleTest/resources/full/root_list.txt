@@ -1,0 +1,5 @@
+org.jacoco:org.jacoco.core:0.8.7
+org.ow2.asm:asm-analysis:9.1
+org.ow2.asm:asm-commons:9.1
+org.ow2.asm:asm-tree:9.1
+org.ow2.asm:asm:9.1

@@ -44,6 +44,15 @@ class FullProject : AbstractProject() {
 
         rootBuildFile.writeText(
             """
+            buildscript {
+                repositories {
+                    mavenCentral()
+                }
+                dependencies {
+                    classpath("org.jacoco:org.jacoco.core:0.8.7")
+                }
+            }
+                
             plugins {
                 id 'com.dropbox.dependency-guard'
             }

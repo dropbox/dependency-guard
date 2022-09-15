@@ -24,12 +24,12 @@ class PluginTest {
             .contains("Dependency Guard baseline created for :lib for configuration compileClasspath.")
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
-            contentFile = "list_before_update.txt",
+            contentFile = "simple/list_before_update.txt",
         )
         // verify tree baseline
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.tree.txt",
-            contentFile = "tree_before_update.txt",
+            contentFile = "simple/tree_before_update.txt",
         )
         // verify configuration-cache related stuff
         assertThat(result.output)
@@ -57,12 +57,12 @@ class PluginTest {
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
-            contentFile = "list_before_update.txt",
+            contentFile = "simple/list_before_update.txt",
         )
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.tree.txt",
-            contentFile = "tree_before_update.txt",
+            contentFile = "simple/tree_before_update.txt",
         )
     }
 
@@ -98,12 +98,12 @@ class PluginTest {
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
-            contentFile = "list_before_update.txt",
+            contentFile = "simple/list_before_update.txt",
         )
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.tree.txt",
-            contentFile = "tree_before_update.txt",
+            contentFile = "simple/tree_before_update.txt",
         )
     }
 
@@ -141,7 +141,7 @@ class PluginTest {
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
-            contentFile = "list_before_update.txt",
+            contentFile = "simple/list_before_update.txt",
         )
     }
 
@@ -169,12 +169,12 @@ class PluginTest {
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.txt",
-            contentFile = "list_after_update.txt",
+            contentFile = "simple/list_after_update.txt",
         )
 
         project.assertFileExistsWithContentEqual(
             filename = "lib/dependencies/compileClasspath.tree.txt",
-            contentFile = "tree_after_update.txt",
+            contentFile = "simple/tree_after_update.txt",
         )
     }
 
@@ -192,6 +192,31 @@ class PluginTest {
         assertThat(result.output).contains("Dependency Guard Tree baseline created for : for configuration classpath.")
         assertThat(result.output).contains("Dependency Guard Tree baseline created for :lib for configuration compileClasspath.")
         assertThat(result.output).contains("Dependency Guard Tree baseline created for :lib for configuration testCompileClasspath.")
+
+        project.assertFileExistsWithContentEqual(
+            filename = "dependencies/classpath.txt",
+            contentFile = "full/root_list.txt",
+        )
+        project.assertFileExistsWithContentEqual(
+            filename = "dependencies/classpath.tree.txt",
+            contentFile = "full/root_tree.txt",
+        )
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.txt",
+            contentFile = "full/lib_compile_list.txt",
+        )
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.tree.txt",
+            contentFile = "full/lib_compile_tree.txt",
+        )
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/testCompileClasspath.txt",
+            contentFile = "full/lib_test_compile_list.txt",
+        )
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/testCompileClasspath.tree.txt",
+            contentFile = "full/lib_test_compile_tree.txt",
+        )
 
         // verify configuration cache is supported
         assertThat(result.output).contains("Calculating task graph as no configuration cache is available for tasks: dependencyGuard")

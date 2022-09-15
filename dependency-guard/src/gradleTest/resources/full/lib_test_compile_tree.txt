@@ -1,0 +1,4 @@
++--- io.reactivex.rxjava3:rxjava:3.1.4
+|    \--- org.reactivestreams:reactive-streams:1.0.3
+\--- junit:junit:4.13.2
+     \--- org.hamcrest:hamcrest-core:1.3
