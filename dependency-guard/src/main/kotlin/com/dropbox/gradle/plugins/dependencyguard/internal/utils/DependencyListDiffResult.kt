@@ -1,6 +1,5 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
-import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineTaskForProjectPath
 import java.io.File
 
 internal sealed class DependencyListDiffResult {
@@ -43,10 +42,7 @@ internal sealed class DependencyListDiffResult {
             private val dependenciesChangedMessage =
                 """Dependencies Changed in $projectPath for configuration $configurationName"""
 
-            private val rebaselineTaskName = getQualifiedBaselineTaskForProjectPath(projectPath)
-
-            private val rebaselineMessage =
-                """If this is intentional, re-baseline using ./gradlew $rebaselineTaskName""".trimIndent()
+            private val rebaselineMessage = Messaging.rebaselineMessage(projectPath)
 
             fun createDiffMessage(withColor: Boolean): String {
                 return StringBuilder().apply {
