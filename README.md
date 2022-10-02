@@ -107,7 +107,7 @@ org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2
 org.jetbrains:annotations:13.0
 ```
 
-You can customize choose to not track modules or artifacts:
+You can choose to not track modules or artifacts:
 ```kotlin
 dependencyGuard {
   configuration("releaseRuntimeClasspath") {
@@ -124,7 +124,7 @@ The builtin Dependencies task from Gradle is `:dependencies`.  The tree format s
 
 The [`dependency-tree-diff` library](https://github.com/JakeWharton/dependency-tree-diff) in extremely helpful tool, but is impractical for many projects in Continuous Integration since it has a lot of custom setup to enable it. ([related discussion](https://github.com/JakeWharton/dependency-tree-diff/discussions/8)).  `dependency-tree-diff`'s diffing logic is actually used by Dependency Guard to highlight changes in trees.
 
-The tree format proved to be very helpful, but as we looked at it from a daily usage standpoint, we found that the tree format created more noise than signal.  It's super helpful to use for development, but we wouldn't recommend storing the tree format in Git, especially in large projects as it gets noisy, and it becomes ignored.  In brainstorming with [@joshfein](https://twitter.com/joshfein), it seemed like a simple orded, de-duplicated list of dependencies were better for storing in CI.
+The tree format proved to be very helpful, but as we looked at it from a daily usage standpoint, we found that the tree format created more noise than signal.  It's super helpful to use for development, but we wouldn't recommend storing the tree format in Git, especially in large projects as it gets noisy, and it becomes ignored.  In brainstorming with [@joshfein](https://twitter.com/joshfein), it seemed like a simple ordered, de-duplicated list of dependencies were better for storing in CI.
 
 `dependencies/releaseRuntimeClasspath.tree.txt`
 ```
@@ -183,7 +183,7 @@ Changes to either one of these can change your resulting application.
 
 ### How Does Dependency Guard Work?
 
-Dependency Guard writes a baseline file containing all your transtitive dependencies for a given configuration that should be checked into git.
+Dependency Guard writes a baseline file containing all your transitive dependencies for a given configuration that should be checked into git.
 
 Under the hood, we're leveraging the same logic that [the Gradle `dependencies` task](https://docs.gradle.org/current/userguide/viewing_debugging_dependencies.html) uses and displays in build scans, but creating a process which can guard against changes.
 
@@ -226,7 +226,7 @@ The Dependency Guard plugin adds a few tasks for you to use in your Gradle Build
 
 Compare against the configured transitive dependency report baselines, or generate them if they don't exist.
 
-This task is added to any project that you apply the plugin to.  The plugin should only be applied to project you are interested in tracking transtive dependencies for.
+This task is added to any project that you apply the plugin to.  The plugin should only be applied to project you are interested in tracking transitive dependencies for.
 
 ### `dependencyGuardBaseline`
 
