@@ -32,6 +32,7 @@ internal class DependencyListDiffTest {
                     appendLine("+ androidx.activity:activity:1.4.0")
                     appendLine()
                     appendLine("If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline")
+                    appendLine("Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.")
                 }.toString()
 
                 assertThat(actual)
@@ -66,6 +67,7 @@ internal class DependencyListDiffTest {
                     appendLine("+ androidx.activity:activity:1.4.0")
                     appendLine()
                     appendLine("If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline")
+                    appendLine("Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.")
                 }.toString()
 
                 assertThat(actual)

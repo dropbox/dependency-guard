@@ -1,10 +1,9 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
-import com.dropbox.gradle.plugins.dependencyguard.internal.qualifiedBaselineTaskName
-import java.io.File
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import java.io.File
 
 internal class DependencyGuardTreeDiffer(
     private val project: Project,
@@ -63,12 +62,13 @@ internal class DependencyGuardTreeDiffer(
                     ColorTerminal.printlnColor(ansiColor, it)
                 }
 
+                val projectPath = project.path
                 throw GradleException(
                     StringBuilder().apply {
                         appendLine(Messaging.dependencyChangeDetected)
                         appendLine("Dependency Tree comparison to baseline does not match.")
                         appendLine()
-                        appendLine("If this is intentional, re-baseline using ./gradlew ${project.qualifiedBaselineTaskName()}")
+                        appendLine(Messaging.rebaselineMessage(projectPath))
                     }.toString()
                 )
             }
