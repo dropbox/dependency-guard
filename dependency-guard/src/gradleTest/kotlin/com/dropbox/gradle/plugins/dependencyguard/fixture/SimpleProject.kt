@@ -5,7 +5,7 @@ import com.dropbox.gradle.plugins.dependencyguard.util.writeText
 import java.nio.file.Path
 
 class SimpleProject(
-    private val tree: Boolean = true,
+    private val tree: Boolean,
 ) : AbstractProject() {
 
   private val gradlePropertiesFile = projectDir.resolve("gradle.properties")

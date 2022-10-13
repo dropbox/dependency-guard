@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class PluginTest {
 
     @Test
-    fun `can generate baseline`(): Unit = SimpleProject().use { project ->
+    fun `can generate baseline`(): Unit = SimpleProject(tree = true).use { project ->
         val result = build(
             project = project,
             args = arrayOf(":lib:dependencyGuard")
@@ -39,7 +39,7 @@ class PluginTest {
     }
 
     @Test
-    fun `guard with no dependencies changes`(): Unit = SimpleProject().use { project ->
+    fun `guard with no dependencies changes`(): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
             project = project,
@@ -67,7 +67,7 @@ class PluginTest {
     }
 
     @Test
-    fun `guard after dependencies tree changes`(): Unit = SimpleProject().use { project ->
+    fun `guard after dependencies tree changes`(): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
             project = project,
@@ -146,7 +146,7 @@ class PluginTest {
     }
 
     @Test
-    fun `baseline after dependencies changes`(): Unit = SimpleProject().use { project ->
+    fun `baseline after dependencies changes`(): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
             project = project,
