@@ -12,6 +12,9 @@ import org.gradle.internal.logging.text.StyledTextOutput
 
 /**
  * Simplified version of [AsciiDependencyReportRenderer] that renders [ResolvedComponentResult].
+ *
+ * `dependencies` task could be used to render dependencies tree, but it does not support Configuration Cache.
+ * That's why [AsciiDependencyReportRenderer2] was added to render [ResolvedComponentResult].
  */
 internal class AsciiDependencyReportRenderer2 : TextReportRenderer() {
 
