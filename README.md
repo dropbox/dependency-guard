@@ -26,7 +26,7 @@ As platform engineers, we do a lot of library upgrades, and needed insight into 
 - Be deterministic.  De-duplicate entries, and order alphabetically.
 
 ## Real World Issues Which Dependency Guard Addresses
-* Accidentally shipping a testing dependency to production because `implementation` was used instead of `testImplementation` - [@handstandsam](https://twitter.com/joreilly)
+* Accidentally shipping a testing dependency to production because `implementation` was used instead of `testImplementation` - [@handstandsam](https://twitter.com/handstandsam)
   * Dependency Guard has List and Tree baseline formats that can compared against to identify changes. If changes occur, and they are expected, you can re-baseline.
 * Dependency versions were transitively upgraded which worked fine typically, but caused a runtime crash later that was hard to figure out why it happened.
   * You would see the diff off dependencies in Git since the last working version and be able to have quickly track down the issue.
