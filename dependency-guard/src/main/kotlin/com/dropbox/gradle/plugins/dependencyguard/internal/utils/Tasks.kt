@@ -10,10 +10,5 @@ internal object Tasks {
         } else {
             outputs.upToDateWhen { false }
         }
-
-        // See also https://github.com/dropbox/dependency-guard/issues/4.
-        if (GradleVersion.isAtLeast74) {
-            notCompatibleWithConfigurationCache("Uses Project at execution time")
-        }
     }
 }

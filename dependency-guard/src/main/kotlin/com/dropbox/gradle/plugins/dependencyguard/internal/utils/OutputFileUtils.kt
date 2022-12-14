@@ -1,19 +1,17 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
+import org.gradle.api.file.Directory
 import java.io.File
-import org.gradle.api.Project
 
 internal object OutputFileUtils {
     fun buildDirOutputFile(
-        project: Project,
+        buildDirectory: Directory,
         configurationName: String,
         reportType: DependencyGuardReportType,
     ): File {
         val configurationNameAndSuffix = "$configurationName${reportType.fileSuffix}"
-        return project.layout
-            .buildDirectory
-            .get()
+        return buildDirectory
             .dir("tmp/dependency-guard")
             .file("$configurationNameAndSuffix.txt")
             .asFile
@@ -28,13 +26,12 @@ internal object OutputFileUtils {
     }
 
     fun projectDirOutputFile(
-        project: Project,
+        projectDirectory: Directory,
         configurationName: String,
         reportType: DependencyGuardReportType
     ): File {
         val configurationNameAndSuffix = "${reportType.filePrefix}$configurationName${reportType.fileSuffix}"
-        return project.layout
-            .projectDirectory
+        return projectDirectory
             .dir("dependencies")
             .file("$configurationNameAndSuffix.txt")
             .asFile

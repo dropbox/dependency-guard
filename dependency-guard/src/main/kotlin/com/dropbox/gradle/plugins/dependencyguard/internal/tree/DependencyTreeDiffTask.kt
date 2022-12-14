@@ -2,42 +2,62 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
+import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
-import org.gradle.api.tasks.diagnostics.DependencyReportTask
+import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 
-internal open class DependencyTreeDiffTask : DependencyReportTask(), TreeDiffTask {
+internal abstract class DependencyTreeDiffTask : DefaultTask() {
 
-    private var configurationName: String = ""
-
-    private var shouldBaseline: Boolean = false
-
-    private val dependencyGuardTreeDiffer by lazy {
-        DependencyGuardTreeDiffer(
-            project = project,
-            configurationName = configurationName,
-            shouldBaseline = shouldBaseline,
-        )
-    }
+    private lateinit var dependencyGuardTreeDiffer: DependencyGuardTreeDiffer
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
-        this.doFirst {
-            ConfigurationValidators.validateConfigurationsAreAvailable(
-                project,
-                listOf(configurationName)
-            )
-        }
+
         this.doLast {
             dependencyGuardTreeDiffer.performDiff()
         }
     }
-    override fun setParams(configurationName: String, shouldBaseline: Boolean) {
-        this.shouldBaseline = shouldBaseline
-        this.configurationName = configurationName
-        super.setConfiguration(configurationName)
-        this.outputFile = dependencyGuardTreeDiffer.buildDirOutputFile
+
+    @get:Input
+    abstract val resolvedComponentResult: Property<ResolvedComponentResult>
+
+    fun setParams(
+        project: Project,
+        configurationName: String,
+        shouldBaseline: Boolean,
+    ) {
+        ConfigurationValidators.validateConfigurationsAreAvailable(
+            project,
+            listOf(configurationName)
+        )
+
+        this.dependencyGuardTreeDiffer = DependencyGuardTreeDiffer(
+            project = project,
+            configurationName = configurationName,
+            shouldBaseline = shouldBaseline,
+        )
+
+        val resolvedComponentResult = project.projectConfigurations.getResolvedComponentResult(configurationName)
+        this.resolvedComponentResult.set(resolvedComponentResult)
 
         declareCompatibilities()
+    }
+
+    @TaskAction
+    fun generate() {
+        // USES INTERNAL API
+        val asciiRenderer = AsciiDependencyReportRenderer2()
+
+        val resolvedComponentResult = resolvedComponentResult.get()
+        asciiRenderer.setOutputFile(dependencyGuardTreeDiffer.buildDirOutputFile)
+        asciiRenderer.prepareVisit()
+        asciiRenderer.render(resolvedComponentResult)
     }
 }
