@@ -1,4 +1,8 @@
 # 🛡️ Dependency Guard
+[![LICENSE](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/dropbox/dependency-guard/blob/main/LICENSE.txt)
+[![Latest Stable](https://img.shields.io/badge/dynamic/xml?url=https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Stable&color=blue&query=.//versioning/latest)](https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/)
+[![Latest Snapshot](https://img.shields.io/badge/dynamic/xml?url=https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Snapshot&color=orange&query=.//versioning/latest)](https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/com.dropbox.dependency-guard.gradle.plugin/)
+[![CI](https://github.com/handstandsam/kmp4free/workflows/CI/badge.svg)](https://github.com/dropbox/dependency-guard/actions?query=branch%3Amain)
 
 A Gradle plugin that helps you **guard against unintentional dependency changes**.
 
