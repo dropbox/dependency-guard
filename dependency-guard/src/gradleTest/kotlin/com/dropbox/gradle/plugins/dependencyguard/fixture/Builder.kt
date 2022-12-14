@@ -8,46 +8,38 @@ import java.nio.file.Path
 
 object Builder {
 
-  fun build(
-    gradleVersion: GradleVersion = GradleVersion.current(),
-    project: AbstractProject,
-    vararg args: String
-  ): BuildResult = runner(gradleVersion, project.projectDir, *args).build()
+    fun build(
+        gradleVersion: GradleVersion,
+        project: AbstractProject,
+        withConfigurationCache: Boolean,
+        vararg args: String
+    ): BuildResult = runner(gradleVersion, project.projectDir, withConfigurationCache, *args).build()
 
-  fun build(
-    gradleVersion: GradleVersion = GradleVersion.current(),
-    projectDir: Path,
-    withPluginClasspath: Boolean = true,
-    vararg args: String
-  ): BuildResult = runner(gradleVersion, projectDir, *args).build()
+    fun buildAndFail(
+        gradleVersion: GradleVersion,
+        project: AbstractProject,
+        withConfigurationCache: Boolean,
+        vararg args: String
+    ): BuildResult = runner(gradleVersion, project.projectDir, withConfigurationCache, *args).buildAndFail()
 
-  fun buildAndFail(
-    gradleVersion: GradleVersion = GradleVersion.current(),
-    project: AbstractProject,
-    vararg args: String
-  ): BuildResult = runner(
-    gradleVersion,
-    project.projectDir,
-    *args
-  ).buildAndFail()
+    private fun runner(
+        gradleVersion: GradleVersion,
+        projectDir: Path,
+        withConfigurationCache: Boolean,
+        vararg args: String
+    ): GradleRunner = GradleRunner.create().apply {
+        forwardOutput()
+        withPluginClasspath()
+        withGradleVersion(gradleVersion.version)
+        withProjectDir(projectDir.toFile())
 
-  fun buildAndFail(
-    gradleVersion: GradleVersion = GradleVersion.current(),
-    projectDir: Path,
-    vararg args: String
-  ): BuildResult = runner(gradleVersion, projectDir, *args).buildAndFail()
-
-  private fun runner(
-    gradleVersion: GradleVersion,
-    projectDir: Path,
-    vararg args: String
-  ): GradleRunner = GradleRunner.create().apply {
-    forwardOutput()
-    withPluginClasspath()
-    withGradleVersion(gradleVersion.version)
-    withProjectDir(projectDir.toFile())
-    withArguments(args.toList() + "-s" + "--configuration-cache")
-    // Ensure this value is true when `--debug-jvm` is passed to Gradle, and false otherwise
-    withDebug(getRuntimeMXBean().inputArguments.toString().indexOf("-agentlib:jdwp") > 0)
-  }
+        val arguments = listOfNotNull(
+            *args,
+            "-s",
+            if (withConfigurationCache) "--configuration-cache" else null,
+        )
+        withArguments(arguments)
+        // Ensure this value is true when `--debug-jvm` is passed to Gradle, and false otherwise
+        withDebug(getRuntimeMXBean().inputArguments.toString().indexOf("-agentlib:jdwp") > 0)
+    }
 }

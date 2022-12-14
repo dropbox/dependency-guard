@@ -8,13 +8,14 @@ import com.dropbox.gradle.plugins.dependencyguard.fixture.SimpleProject
 import com.dropbox.gradle.plugins.dependencyguard.util.assertFileExistsWithContentEqual
 import com.dropbox.gradle.plugins.dependencyguard.util.replaceText
 import com.google.common.truth.Truth.assertThat
-import org.junit.jupiter.api.Test
 
 class PluginTest {
 
-    @Test
-    fun `can generate baseline`(): Unit = SimpleProject(tree = true).use { project ->
+    @ParameterizedPluginTest
+    fun `can generate baseline`(args: ParameterizedPluginArgs): Unit = SimpleProject(tree = true).use { project ->
         val result = build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -31,23 +32,32 @@ class PluginTest {
             filename = "lib/dependencies/compileClasspath.tree.txt",
             contentFile = "simple/tree_before_update.txt",
         )
-        // verify configuration-cache related stuff
-        assertThat(result.output)
-            .contains("Calculating task graph as no configuration cache is available for tasks: :lib:dependencyGuard")
-        assertThat(result.output)
-            .contains("Configuration cache entry stored.")
+
+        if (args.withConfigurationCache) {
+            // verify configuration-cache related stuff
+            assertThat(result.output)
+                .contains("Calculating task graph as no configuration cache is available for tasks: :lib:dependencyGuard")
+            assertThat(result.output)
+                .contains("Configuration cache entry stored.")
+        }
     }
 
-    @Test
-    fun `guard with no dependencies changes`(): Unit = SimpleProject(tree = true).use { project ->
+    @ParameterizedPluginTest
+    fun `guard with no dependencies changes`(
+        args: ParameterizedPluginArgs,
+    ): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
 
         // check with no dependencies changes
         val result = build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -66,10 +76,14 @@ class PluginTest {
         )
     }
 
-    @Test
-    fun `guard after dependencies tree changes`(): Unit = SimpleProject(tree = true).use { project ->
+    @ParameterizedPluginTest
+    fun `guard after dependencies tree changes`(
+        args: ParameterizedPluginArgs,
+    ): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -81,6 +95,8 @@ class PluginTest {
 
         // check after dependencies changes
         val result = buildAndFail(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -107,10 +123,14 @@ class PluginTest {
         )
     }
 
-    @Test
-    fun `guard after dependencies list changes`(): Unit = SimpleProject(tree = false).use { project ->
+    @ParameterizedPluginTest
+    fun `guard after dependencies list changes`(
+        args: ParameterizedPluginArgs,
+    ): Unit = SimpleProject(tree = false).use { project ->
         // create baseline
         build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -122,6 +142,8 @@ class PluginTest {
 
         // check after dependencies changes
         val result = buildAndFail(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -145,10 +167,14 @@ class PluginTest {
         )
     }
 
-    @Test
-    fun `baseline after dependencies changes`(): Unit = SimpleProject(tree = true).use { project ->
+    @ParameterizedPluginTest
+    fun `baseline after dependencies changes`(
+        args: ParameterizedPluginArgs,
+    ): Unit = SimpleProject(tree = true).use { project ->
         // create baseline
         build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -160,6 +186,8 @@ class PluginTest {
 
         // check after dependencies changes
         val result = build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuardBaseline")
         )
@@ -178,9 +206,11 @@ class PluginTest {
         )
     }
 
-    @Test
-    fun `can generate full report baseline`(): Unit = FullProject().use { project ->
+    @ParameterizedPluginTest
+    fun `can generate full report baseline`(args: ParameterizedPluginArgs): Unit = FullProject().use { project ->
         val result = build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf("dependencyGuard")
         )
@@ -218,16 +248,20 @@ class PluginTest {
             contentFile = "full/lib_test_compile_tree.txt",
         )
 
-        // verify configuration cache is supported
-        assertThat(result.output).contains("Calculating task graph as no configuration cache is available for tasks: dependencyGuard")
-        assertThat(result.output).contains("Configuration cache entry stored.")
+        if (args.withConfigurationCache) {
+            // verify configuration cache is supported
+            assertThat(result.output).contains("Calculating task graph as no configuration cache is available for tasks: dependencyGuard")
+            assertThat(result.output).contains("Configuration cache entry stored.")
+        }
     }
 
-    @Test
-    fun `prints error when no configuration found`(): Unit = ConfiguredProject(
+    @ParameterizedPluginTest
+    fun `prints error when no configuration found`(args: ParameterizedPluginArgs): Unit = ConfiguredProject(
         configurations = emptyList(),
     ).use { project ->
         val result = buildAndFail(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
@@ -235,14 +269,16 @@ class PluginTest {
         assertThat(result.output).contains("Error: No configurations provided to Dependency Guard Plugin.")
     }
 
-    @Test
-    fun `prints error when wrong configuration found`(): Unit = ConfiguredProject(
+    @ParameterizedPluginTest
+    fun `prints error when wrong configuration found`(args: ParameterizedPluginArgs): Unit = ConfiguredProject(
         configurations = listOf(
             "compileClasspath",
             "releaseCompileClasspath",
         ),
     ).use { project ->
         val result = buildAndFail(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
             project = project,
             args = arrayOf(":lib:dependencyGuard")
         )
