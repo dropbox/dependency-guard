@@ -16,6 +16,8 @@ public class DependencyGuardPlugin : Plugin<Project> {
     internal companion object {
         internal const val DEPENDENCY_GUARD_TASK_GROUP = "Dependency Guard"
 
+        internal const val DEPENDENCY_GUARD_EXTENSION_NAME = "dependencyGuard"
+
         internal const val DEPENDENCY_GUARD_TASK_NAME = "dependencyGuard"
 
         internal const val DEPENDENCY_GUARD_BASELINE_TASK_NAME = "dependencyGuardBaseline"
@@ -23,7 +25,7 @@ public class DependencyGuardPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         val extension = target.extensions.create(
-            DEPENDENCY_GUARD_TASK_NAME,
+            DEPENDENCY_GUARD_EXTENSION_NAME,
             DependencyGuardPluginExtension::class.java,
             target.objects
         )

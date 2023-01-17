@@ -27,23 +27,23 @@ internal object ConfigurationValidators {
                 }.toString()
                 throw GradleException(message)
             }
-            return
-        }
-        val configurationNames = monitoredConfigurations.map { it.configurationName }
-        require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
-            StringBuilder().apply {
-                appendLine("Error: No configurations provided to Dependency Guard Plugin.")
-                appendLine("Here are some valid configurations you could use.")
-                appendLine("")
-                val availableConfigNames = availableConfigurations
-                    .filter { isClasspathConfig(it) }
+        } else {
+            val configurationNames = monitoredConfigurations.map { it.configurationName }
+            require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
+                StringBuilder().apply {
+                    appendLine("Error: No configurations provided to Dependency Guard Plugin.")
+                    appendLine("Here are some valid configurations you could use.")
+                    appendLine("")
+                    val availableConfigNames = availableConfigurations
+                        .filter { isClasspathConfig(it) }
 
-                appendLine("dependencyGuard {")
-                availableConfigNames.forEach {
-                    appendLine("""  configuration("$it")""")
-                }
-                appendLine("}")
-            }.toString()
+                    appendLine("dependencyGuard {")
+                    availableConfigNames.forEach {
+                        appendLine("""  configuration("$it")""")
+                    }
+                    appendLine("}")
+                }.toString()
+            }
         }
     }
 

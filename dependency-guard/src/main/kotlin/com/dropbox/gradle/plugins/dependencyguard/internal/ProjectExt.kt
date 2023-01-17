@@ -4,6 +4,7 @@ import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.provider.Provider
 
 internal fun Project.isRootProject(): Boolean = this == rootProject
 
@@ -19,8 +20,8 @@ internal val Project.projectConfigurations: ConfigurationContainer
         configurations
     }
 
-internal fun ConfigurationContainer.getResolvedComponentResult(name: String): ResolvedComponentResult = this
+internal fun ConfigurationContainer.getResolvedComponentResult(name: String): Provider<ResolvedComponentResult> = this
     .getByName(name)
     .incoming
     .resolutionResult
-    .root
+    .rootComponent
