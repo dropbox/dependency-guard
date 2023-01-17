@@ -1,6 +1,8 @@
 # Change Log
 
-## Version 0.4.0
+## Version 0.4.0 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.3.2...0.4.0))
+
+_2023-01-17_
 
 * Support for Configuration Cache by [@qwert2603](https://github.com/qwert2603) in [#51](https://github.com/dropbox/dependency-guard/pull/51)
 
