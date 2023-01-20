@@ -1,3 +1,5 @@
+# 🚨[Issue with Version `0.4.0`](https://github.com/dropbox/dependency-guard/issues/67) for some use cases.  Please use `0.3.2` if you experience any issues during an upgrade until this can be addressed.
+
 # 🛡️ Dependency Guard
 [![LICENSE](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/dropbox/dependency-guard/blob/main/LICENSE.txt)
 [![Latest Stable](https://img.shields.io/badge/dynamic/xml?url=https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Stable&color=blue&query=.//versioning/latest)](https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/)
