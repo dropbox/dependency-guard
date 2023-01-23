@@ -1,5 +1,3 @@
-# 🚨[Issue with Version `0.4.0`](https://github.com/dropbox/dependency-guard/issues/67) for some use cases.  Please use `0.3.2` if you experience any issues during an upgrade until this can be addressed.
-
 # 🛡️ Dependency Guard
 [![LICENSE](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/dropbox/dependency-guard/blob/main/LICENSE.txt)
 [![Latest Stable](https://img.shields.io/badge/dynamic/xml?url=https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Stable&color=blue&query=.//versioning/latest)](https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/)
@@ -45,7 +43,7 @@ As platform engineers, we do a lot of library upgrades, and needed insight into 
 ```kotlin
 // sample/app/build.gradle.kts
 plugins {
-  id("com.dropbox.dependency-guard") version "0.4.0"
+  id("com.dropbox.dependency-guard") version "0.4.1"
 }
 ```
 
@@ -256,7 +254,7 @@ buildscript {
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
-        classpath("com.dropbox.dependency-guard:dependency-guard:0.4.0")
+        classpath("com.dropbox.dependency-guard:dependency-guard:0.4.1")
     }
 }
 ```
