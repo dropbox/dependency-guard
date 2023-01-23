@@ -25,7 +25,5 @@ allprojects {
 }
 
 dependencyGuard {
-    configuration("classpath") {
-        it.tree = true
-    }
+    configuration("classpath")
 }
