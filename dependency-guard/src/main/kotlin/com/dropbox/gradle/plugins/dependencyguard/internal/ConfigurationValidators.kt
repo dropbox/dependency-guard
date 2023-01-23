@@ -12,6 +12,7 @@ internal object ConfigurationValidators {
     private val logger = Logging.getLogger(DependencyGuardPlugin::class.java)
 
     fun requirePluginConfig(
+        projectPath: String,
         isForRootProject: Boolean,
         availableConfigurations: List<String>,
         monitoredConfigurations: List<DependencyGuardConfiguration>
@@ -28,14 +29,27 @@ internal object ConfigurationValidators {
                 throw GradleException(message)
             }
         } else {
+            val availableConfigNames = availableConfigurations
+                .filter { isClasspathConfig(it) }
+
+            require(availableConfigNames.isNotEmpty()) {
+                StringBuilder().apply {
+                    appendLine("Error: The Dependency Guard Plugin can not find any configurations ending in 'RuntimeClasspath' or 'CompileClasspath'.")
+                    appendLine("Suggestion: Move your usage of Dependency Guard as access to these Classpath configurations are required to configure Dependency Guard correctly.")
+                    appendLine("Why: Either you have applied the plugin too early or your project just doesn't have any matching Classpath configurations.")
+                    appendLine("All available Gradle configurations for project $projectPath at this point of time:")
+                    availableConfigurations.forEach {
+                        appendLine("* $it")
+                    }
+                }.toString()
+            }
+
             val configurationNames = monitoredConfigurations.map { it.configurationName }
             require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
                 StringBuilder().apply {
                     appendLine("Error: No configurations provided to Dependency Guard Plugin.")
                     appendLine("Here are some valid configurations you could use.")
                     appendLine("")
-                    val availableConfigNames = availableConfigurations
-                        .filter { isClasspathConfig(it) }
 
                     appendLine("dependencyGuard {")
                     availableConfigNames.forEach {

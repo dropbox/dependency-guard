@@ -157,6 +157,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         shouldBaseline: Boolean
     ) {
         ConfigurationValidators.requirePluginConfig(
+            projectPath = project.path,
             isForRootProject = project.isRootProject(),
             availableConfigurations = project.configurations.map { it.name },
             monitoredConfigurations = extension.configurations.toList(),
