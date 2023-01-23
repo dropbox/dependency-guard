@@ -5,6 +5,7 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidato
 import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentResult
 import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import java.io.File
 import org.gradle.api.DefaultTask
@@ -52,7 +53,8 @@ internal abstract class DependencyTreeDiffTask : DefaultTask() {
             project,
             listOf(configurationName)
         )
-        val projectDirOutputFile: File = DependencyGuardTreeDiffer.projectDirOutputFile(project.layout.projectDirectory, configurationName)
+        val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
+        val projectDirOutputFile: File = DependencyGuardTreeDiffer.projectDirOutputFile(projectDependenciesDir, configurationName)
         val buildDirOutputFile: File = DependencyGuardTreeDiffer.buildDirOutputFile(project.layout.buildDirectory.get(), configurationName)
         val projectPath = project.path
         val resolvedComponentResult = project.projectConfigurations.getResolvedComponentResult(configurationName)

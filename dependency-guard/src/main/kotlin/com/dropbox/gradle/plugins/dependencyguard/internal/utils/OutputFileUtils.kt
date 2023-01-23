@@ -48,6 +48,14 @@ internal object OutputFileUtils {
         return buildDirectory
             .file("$configurationNameAndSuffix.txt")
             .asFile
+            .apply {
+                parentFile.apply {
+                    if (!exists()) {
+                        // Create the directory if it does not exist
+                        mkdirs()
+                    }
+                }
+            }
     }
 
     fun projectDirOutputFile(
