@@ -57,18 +57,15 @@ internal object OutputFileUtils {
     ): File {
         val configurationNameAndSuffix = "${reportType.filePrefix}$configurationName${reportType.fileSuffix}"
         return projectDirectory
-            .dir("dependencies")
             .file("$configurationNameAndSuffix.txt")
             .asFile
             .apply {
                 parentFile.apply {
                     if (!exists()) {
-                        // Create the "dependencies" directory if it does not exist
+                        // Create the directory if it does not exist
                         mkdirs()
                     }
                 }
             }
     }
-
-    private const val DIRECTORY_NAME = "dependency-guard"
 }

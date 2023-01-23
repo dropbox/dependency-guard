@@ -14,7 +14,6 @@ internal class DependencyGuardListReportWriter(
      * @return Whether changes were detected
      */
     internal fun writeReport(
-        buildDirOutputFile: File,
         projectDirOutputFile: File,
         report: DependencyGuardReportData,
         shouldBaseline: Boolean,
@@ -23,8 +22,6 @@ internal class DependencyGuardListReportWriter(
             artifacts = artifacts,
             modules = modules
         )
-
-        buildDirOutputFile.writeText(reportContent)
 
         val projectDirOutputFileExists = projectDirOutputFile.exists()
         return if (shouldBaseline || !projectDirOutputFileExists) {

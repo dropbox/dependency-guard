@@ -62,9 +62,6 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
     @get:OutputDirectory
-    abstract val buildDirectoryDependencyGuardTempDir: DirectoryProperty
-
-    @get:OutputDirectory
     abstract val projectDirectoryDependenciesDir: DirectoryProperty
 
     @Suppress("NestedBlockDepth")
@@ -125,11 +122,6 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         )
 
         return reportWriter.writeReport(
-            buildDirOutputFile = OutputFileUtils.buildDirOutputFile(
-                buildDirectory = buildDirectoryDependencyGuardTempDir.get(),
-                configurationName = report.configurationName,
-                reportType = reportType,
-            ),
             projectDirOutputFile = OutputFileUtils.projectDirOutputFile(
                 projectDirectory = projectDirectoryDependenciesDir.get(),
                 configurationName = report.configurationName,
@@ -178,12 +170,8 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         this.projectPath.set(project.path)
         this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
-
-        val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
-        val buildDgTempDir = OutputFileUtils.buildDirDependencyGuardTmpDir(project.layout.buildDirectory.get())
-
-        this.buildDirectoryDependencyGuardTempDir.set(projectDependenciesDir)
-        this.projectDirectoryDependenciesDir.set(buildDgTempDir)
+        val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
+        this.projectDirectoryDependenciesDir.set(projectDirDependenciesDir)
 
         declareCompatibilities()
     }
