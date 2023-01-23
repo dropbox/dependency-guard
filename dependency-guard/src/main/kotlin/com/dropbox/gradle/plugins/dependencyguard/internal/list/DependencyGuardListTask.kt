@@ -23,6 +23,7 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 internal abstract class DependencyGuardListTask : DefaultTask() {
@@ -60,11 +61,11 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     @get:Input
     abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
-    @get:Input
-    abstract val buildDirectory: DirectoryProperty
+    @get:OutputDirectory
+    abstract val buildDirectoryDependencyGuardTempDir: DirectoryProperty
 
-    @get:Input
-    abstract val projectDirectory: DirectoryProperty
+    @get:OutputDirectory
+    abstract val projectDirectoryDependenciesDir: DirectoryProperty
 
     @Suppress("NestedBlockDepth")
     @TaskAction
@@ -122,14 +123,15 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
             artifacts = dependencyGuardConfig.artifacts,
             modules = dependencyGuardConfig.modules
         )
+
         return reportWriter.writeReport(
             buildDirOutputFile = OutputFileUtils.buildDirOutputFile(
-                buildDirectory = buildDirectory.get(),
+                buildDirectory = buildDirectoryDependencyGuardTempDir.get(),
                 configurationName = report.configurationName,
                 reportType = reportType,
             ),
             projectDirOutputFile = OutputFileUtils.projectDirOutputFile(
-                projectDirectory = projectDirectory.get(),
+                projectDirectory = projectDirectoryDependenciesDir.get(),
                 configurationName = report.configurationName,
                 reportType = reportType,
             ),
@@ -176,8 +178,14 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         this.projectPath.set(project.path)
         this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
-        this.buildDirectory.set(project.layout.buildDirectory)
-        this.projectDirectory.set(project.layout.projectDirectory)
+
+
+
+        val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
+        val buildDgTempDir = OutputFileUtils.buildDirDependencyGuardTmpDir(project.layout.buildDirectory.get())
+
+        this.buildDirectoryDependencyGuardTempDir.set(projectDependenciesDir)
+        this.projectDirectoryDependenciesDir.set(buildDgTempDir)
 
         declareCompatibilities()
     }
