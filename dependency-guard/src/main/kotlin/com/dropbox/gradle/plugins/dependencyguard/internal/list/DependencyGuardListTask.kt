@@ -170,7 +170,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         this.projectPath.set(project.path)
         this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
-        val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
+        val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
         this.projectDirectoryDependenciesDir.set(projectDirDependenciesDir)
 
         declareCompatibilities()

@@ -53,7 +53,7 @@ internal abstract class DependencyTreeDiffTask : DefaultTask() {
             project,
             listOf(configurationName)
         )
-        val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
+        val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
         val projectDirOutputFile: File = DependencyGuardTreeDiffer.projectDirOutputFile(projectDependenciesDir, configurationName)
         val buildDirOutputFile: File = DependencyGuardTreeDiffer.buildDirOutputFile(project.layout.buildDirectory.get(), configurationName)
         val projectPath = project.path
