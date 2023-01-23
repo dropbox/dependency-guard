@@ -21,6 +21,7 @@ import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
@@ -57,7 +58,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     abstract val projectPath: Property<String>
 
     @get:Input
-    abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, ResolvedComponentResult>
+    abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
     @get:Input
     abstract val buildDirectory: DirectoryProperty
@@ -70,7 +71,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     internal fun execute() {
         val dependencyGuardConfigurations = monitoredConfigurationsMap.get()
 
-        val reports = dependencyGuardConfigurations.map { generateReportForConfiguration(it.key, it.value) }
+        val reports = dependencyGuardConfigurations.map { generateReportForConfiguration(it.key, it.value.get()) }
 
         // Throw Error if any Disallowed Dependencies are Found
         val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
@@ -184,7 +185,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     private fun resolveMonitoredConfigurationsMap(
         project: Project,
         monitoredConfigurations: Collection<DependencyGuardConfiguration>,
-    ): Map<DependencyGuardConfiguration, ResolvedComponentResult> {
+    ): Map<DependencyGuardConfiguration, Provider<ResolvedComponentResult>> {
         val configurationContainer = project.projectConfigurations
 
         return monitoredConfigurations.associateWith {

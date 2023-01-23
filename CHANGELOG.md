@@ -1,5 +1,12 @@
 # Change Log
 
+## Version 0.4.1 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.0...0.4.1))
+
+_2023-01-23_
+
+* Fixes [#67](https://github.com/dropbox/dependency-guard/issues/67): Configuration Cache by [@handstandsam](https://github.com/handstandsam) in [#70](https://github.com/dropbox/dependency-guard/pull/70)
+* Compatibility: **Requires Gradle 7.4 or Higher** in order to support Configuration Cache.
+
 ## Version 0.4.0 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.3.2...0.4.0))
 
 _2023-01-17_
