@@ -145,7 +145,6 @@ internal class DependencyGuardReportDataTest {
     }
 
     private class TestDelegate {
-        private val buildDirOutputFile = File.createTempFile("buildDir", ".txt")
         private val projectDirOutputFile = File.createTempFile("projectDir", ".txt")
         private val reportWriter = DependencyGuardListReportWriter(
             artifacts = true,
@@ -154,7 +153,6 @@ internal class DependencyGuardReportDataTest {
 
         fun whenReportWritten(report: DependencyGuardReportData, shouldBaseline: Boolean): DependencyListDiffResult {
             return reportWriter.writeReport(
-                buildDirOutputFile = buildDirOutputFile,
                 projectDirOutputFile = projectDirOutputFile,
                 report = report,
                 shouldBaseline = shouldBaseline,

@@ -1,10 +1,28 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
-import org.gradle.api.file.Directory
 import java.io.File
+import org.gradle.api.Project
+import org.gradle.api.file.Directory
 
 internal object OutputFileUtils {
+
+    fun projectDirDependenciesDir(
+        project: Project,
+    ): Directory {
+        val dependenciesDir = project.layout.projectDirectory
+            .dir("dependencies")
+        dependenciesDir
+            .asFile
+            .apply {
+                if (!exists()) {
+                    // Create the directory if it does not exist
+                    mkdirs()
+                }
+            }
+        return dependenciesDir
+    }
+
     fun buildDirOutputFile(
         buildDirectory: Directory,
         configurationName: String,
@@ -12,13 +30,12 @@ internal object OutputFileUtils {
     ): File {
         val configurationNameAndSuffix = "$configurationName${reportType.fileSuffix}"
         return buildDirectory
-            .dir("tmp/dependency-guard")
             .file("$configurationNameAndSuffix.txt")
             .asFile
             .apply {
                 parentFile.apply {
                     if (!exists()) {
-                        // Create the "dependencies" directory if it does not exist
+                        // Create the directory if it does not exist
                         mkdirs()
                     }
                 }
@@ -32,18 +49,15 @@ internal object OutputFileUtils {
     ): File {
         val configurationNameAndSuffix = "${reportType.filePrefix}$configurationName${reportType.fileSuffix}"
         return projectDirectory
-            .dir("dependencies")
             .file("$configurationNameAndSuffix.txt")
             .asFile
             .apply {
                 parentFile.apply {
                     if (!exists()) {
-                        // Create the "dependencies" directory if it does not exist
+                        // Create the directory if it does not exist
                         mkdirs()
                     }
                 }
             }
     }
-
-    private const val DIRECTORY_NAME = "dependency-guard"
 }

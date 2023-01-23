@@ -1,29 +1,32 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal.utils
 
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyGuardReportType
-import org.gradle.api.GradleException
-import org.gradle.api.Project
 import java.io.File
+import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
 
 internal class DependencyGuardTreeDiffer(
-    project: Project,
     private val configurationName: String,
     private val shouldBaseline: Boolean,
+    private val projectDirOutputFile: File,
+    private val buildDirOutputFile: File,
+    private val projectPath: String,
 ) {
+    companion object {
+        fun projectDirOutputFile(projectDirectory: Directory, configurationName: String): File =
+            OutputFileUtils.projectDirOutputFile(
+                projectDirectory = projectDirectory,
+                configurationName = configurationName,
+                reportType = DependencyGuardReportType.TREE,
+            )
 
-    private val projectDirOutputFile: File = OutputFileUtils.projectDirOutputFile(
-        projectDirectory = project.layout.projectDirectory,
-        configurationName = configurationName,
-        reportType = DependencyGuardReportType.TREE,
-    )
 
-    val buildDirOutputFile: File = OutputFileUtils.buildDirOutputFile(
-        buildDirectory = project.layout.buildDirectory.get(),
-        configurationName = configurationName,
-        reportType = DependencyGuardReportType.TREE,
-    )
-
-    private val projectPath = project.path
+        fun buildDirOutputFile(buildDirectory: Directory, configurationName: String): File = OutputFileUtils.buildDirOutputFile(
+            buildDirectory = buildDirectory,
+            configurationName = configurationName,
+            reportType = DependencyGuardReportType.TREE,
+        )
+    }
 
     @Suppress("NestedBlockDepth")
     fun performDiff() {
