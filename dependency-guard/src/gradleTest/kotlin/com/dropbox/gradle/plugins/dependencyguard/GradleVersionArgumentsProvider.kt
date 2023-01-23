@@ -10,7 +10,6 @@ class GradleVersionArgumentsProvider : ArgumentsProvider {
 
     override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> = Stream
         .of(
-            ParameterizedPluginArgs(gradleVersion = GradleVersion.version("7.3.3"), withConfigurationCache = false),
             ParameterizedPluginArgs(gradleVersion = GradleVersion.version("7.4.2"), withConfigurationCache = false),
             ParameterizedPluginArgs(gradleVersion = GradleVersion.version("7.4.2"), withConfigurationCache = true),
             ParameterizedPluginArgs(gradleVersion = GradleVersion.version("7.5.1"), withConfigurationCache = false),
