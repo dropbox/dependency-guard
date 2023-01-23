@@ -179,8 +179,6 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
 
-
-
         val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project.layout.projectDirectory)
         val buildDgTempDir = OutputFileUtils.buildDirDependencyGuardTmpDir(project.layout.buildDirectory.get())
 
