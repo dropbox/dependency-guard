@@ -21,19 +21,18 @@ internal object ConfigurationValidators {
             logger.info("Configured for Root Project")
             if (monitoredConfigurations.isNotEmpty() && monitoredConfigurations.first().configurationName != ScriptHandler.CLASSPATH_CONFIGURATION) {
                 logger.error("If you wish to use dependency guard on your root project, use the following config:")
-                val message = StringBuilder().apply {
-                    appendLine("dependencyGuard {")
-                    appendLine("""  configuration("${ScriptHandler.CLASSPATH_CONFIGURATION}")""")
-                    appendLine("}")
-                }.toString()
-                throw GradleException(message)
+                throw GradleException("""
+                    dependencyGuard {
+                      configuration("${ScriptHandler.CLASSPATH_CONFIGURATION}")
+                    }
+                """.trimIndent())
             }
         } else {
             val availableConfigNames = availableConfigurations
                 .filter { isClasspathConfig(it) }
 
             require(availableConfigNames.isNotEmpty()) {
-                StringBuilder().apply {
+                buildString {
                     appendLine("Error: The Dependency Guard Plugin can not find any configurations ending in 'RuntimeClasspath' or 'CompileClasspath'.")
                     appendLine("Suggestion: Move your usage of Dependency Guard as access to these Classpath configurations are required to configure Dependency Guard correctly.")
                     appendLine("Why: Either you have applied the plugin too early or your project just doesn't have any matching Classpath configurations.")
@@ -41,12 +40,12 @@ internal object ConfigurationValidators {
                     availableConfigurations.forEach {
                         appendLine("* $it")
                     }
-                }.toString()
+                }
             }
 
             val configurationNames = monitoredConfigurations.map { it.configurationName }
             require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
-                StringBuilder().apply {
+                buildString {
                     appendLine("Error: No configurations provided to Dependency Guard Plugin.")
                     appendLine("Here are some valid configurations you could use.")
                     appendLine("")
@@ -56,7 +55,7 @@ internal object ConfigurationValidators {
                         appendLine("""  configuration("$it")""")
                     }
                     appendLine("}")
-                }.toString()
+                }
             }
         }
     }
@@ -79,14 +78,15 @@ internal object ConfigurationValidators {
 
         if (target.isRootProject()) {
             if (configurationNames != listOf(ScriptHandler.CLASSPATH_CONFIGURATION)) {
-                val message = StringBuilder().apply {
-                    appendLine("For the root project, the only allowed configuration is ${ScriptHandler.CLASSPATH_CONFIGURATION}.")
-                    appendLine("Use the following config:")
-                    appendLine("""dependencyGuard {""")
-                    appendLine("""  configuration("classpath")""")
-                    appendLine("""}""")
-                }.toString()
-                throw GradleException(message)
+                throw GradleException(
+                    """
+                        For the root project, the only allowed configuration is ${ScriptHandler.CLASSPATH_CONFIGURATION}.
+                        Use the following config:
+                        dependencyGuard {
+                          configuration("classpath")
+                        }
+                    """.trimIndent()
+                )
             }
             return
         }

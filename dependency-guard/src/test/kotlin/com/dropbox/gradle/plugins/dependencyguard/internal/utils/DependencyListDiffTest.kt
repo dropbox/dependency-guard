@@ -25,15 +25,15 @@ internal class DependencyListDiffTest {
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                 val actual = result.createDiffMessage(false)
-
-                val expected = StringBuilder().apply {
-                    appendLine("""Dependencies Changed in : for configuration classpath""")
-                    appendLine("- androidx.activity:activity:1.3.1")
-                    appendLine("+ androidx.activity:activity:1.4.0")
-                    appendLine()
-                    appendLine("If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline")
-                    appendLine("Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.")
-                }.toString()
+                val expected = """
+                    Dependencies Changed in : for configuration classpath
+                    - androidx.activity:activity:1.3.1
+                    + androidx.activity:activity:1.4.0
+                    
+                    If this is intentional, re-baseline using ./gradlew :dependencyGuardBaseline
+                    Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.
+                    
+                    """.trimIndent()
 
                 assertThat(actual)
                     .isEqualTo(expected)
@@ -61,14 +61,15 @@ internal class DependencyListDiffTest {
         when (result) {
             is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                 val actual = result.createDiffMessage(false)
-                val expected = StringBuilder().apply {
-                    appendLine("""Dependencies Changed in :sample:app for configuration classpath""")
-                    appendLine("- androidx.activity:activity:1.3.1")
-                    appendLine("+ androidx.activity:activity:1.4.0")
-                    appendLine()
-                    appendLine("If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline")
-                    appendLine("Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.")
-                }.toString()
+                val expected = """
+                    Dependencies Changed in :sample:app for configuration classpath
+                    - androidx.activity:activity:1.3.1
+                    + androidx.activity:activity:1.4.0
+                    
+                    If this is intentional, re-baseline using ./gradlew :sample:app:dependencyGuardBaseline
+                    Or use ./gradlew dependencyGuardBaseline to re-baseline dependencies in entire project.
+                    
+                    """.trimIndent()
 
                 assertThat(actual)
                     .isEqualTo(expected)

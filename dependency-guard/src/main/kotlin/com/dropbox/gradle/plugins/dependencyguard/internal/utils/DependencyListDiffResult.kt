@@ -9,12 +9,10 @@ internal sealed class DependencyListDiffResult {
         baselineFile: File,
     ) : DependencyListDiffResult() {
 
-        private val baselineMessage = StringBuilder()
-            .apply {
-                appendLine("Dependency Guard baseline created for $projectPath for configuration $configurationName.")
-                appendLine("File: file://${baselineFile.canonicalPath}")
-            }
-            .toString()
+        private val baselineMessage = """
+            Dependency Guard baseline created for $projectPath for configuration $configurationName.
+            File: file://${baselineFile.canonicalPath}
+        """.trimIndent()
 
         fun baselineCreatedMessage(withColor: Boolean): String = if (withColor) {
             ColorTerminal.colorify(ColorTerminal.ANSI_YELLOW, baselineMessage)
@@ -44,32 +42,28 @@ internal sealed class DependencyListDiffResult {
 
             private val rebaselineMessage = Messaging.rebaselineMessage(projectPath)
 
-            fun createDiffMessage(withColor: Boolean): String {
-                return StringBuilder().apply {
-                    apply {
-                        appendLine(
-                            if (withColor) {
-                                ColorTerminal.colorify(ColorTerminal.ANSI_YELLOW, dependenciesChangedMessage)
-                            } else {
-                                dependenciesChangedMessage
-                            }
-                        )
-                        appendLine(
-                            if (withColor) {
-                                removedAndAddedLines.diffTextWithPlusAndMinusWithColor
-                            } else {
-                                removedAndAddedLines.diffTextWithPlusAndMinus
-                            }
-                        )
-                        appendLine(
-                            if (withColor) {
-                                ColorTerminal.colorify(ColorTerminal.ANSI_RED, rebaselineMessage)
-                            } else {
-                                rebaselineMessage
-                            }
-                        )
+            fun createDiffMessage(withColor: Boolean): String = buildString {
+                appendLine(
+                    if (withColor) {
+                        ColorTerminal.colorify(ColorTerminal.ANSI_YELLOW, dependenciesChangedMessage)
+                    } else {
+                        dependenciesChangedMessage
                     }
-                }.toString()
+                )
+                appendLine(
+                    if (withColor) {
+                        removedAndAddedLines.diffTextWithPlusAndMinusWithColor
+                    } else {
+                        removedAndAddedLines.diffTextWithPlusAndMinus
+                    }
+                )
+                appendLine(
+                    if (withColor) {
+                        ColorTerminal.colorify(ColorTerminal.ANSI_RED, rebaselineMessage)
+                    } else {
+                        rebaselineMessage
+                    }
+                )
             }
         }
     }

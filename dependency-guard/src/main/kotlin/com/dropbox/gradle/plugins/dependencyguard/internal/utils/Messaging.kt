@@ -6,9 +6,8 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.getQualifiedBaselineT
 internal object Messaging {
     const val dependencyChangeDetected = "***** DEPENDENCY CHANGE DETECTED *****"
 
-    fun rebaselineMessage(projectPath: String): String {
-        val rebaselineModuleTaskName = getQualifiedBaselineTaskForProjectPath(projectPath)
-        return """If this is intentional, re-baseline using ./gradlew $rebaselineModuleTaskName
-            |Or use ./gradlew $DEPENDENCY_GUARD_BASELINE_TASK_NAME to re-baseline dependencies in entire project.""".trimMargin()
-    }
+    fun rebaselineMessage(projectPath: String): String = """
+        If this is intentional, re-baseline using ./gradlew ${getQualifiedBaselineTaskForProjectPath(projectPath)}
+        Or use ./gradlew $DEPENDENCY_GUARD_BASELINE_TASK_NAME to re-baseline dependencies in entire project.
+    """.trimIndent()
 }

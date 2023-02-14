@@ -25,7 +25,7 @@ internal data class DependencyGuardReportData(
         .distinct()
         .sortedBy { it.name }
 
-    private fun allDepsReport(artifacts: Boolean, modules: Boolean): String = StringBuilder().apply {
+    private fun allDepsReport(artifacts: Boolean, modules: Boolean): String = buildString {
         if (modules) {
             moduleDeps.toReportString().apply {
                 if (this.isNotBlank()) {
@@ -40,23 +40,17 @@ internal data class DependencyGuardReportData(
                 }
             }
         }
-    }.toString()
+    }
 
     val disallowed: List<Dependency> = dependencies
         .filter { !allowedFilter(it.name) }
         .distinct()
         .sortedBy { it.name }
 
-    private fun List<Dependency>.toReportString(): String {
-        val deps = this
-        return StringBuilder().apply {
-            deps.forEach {
-                val mappedName = baselineMap(it.name)
-                if (mappedName != null) {
-                    appendLine(mappedName)
-                }
-            }
-        }.toString()
+    private fun List<Dependency>.toReportString() : String = buildString {
+        this@toReportString.forEach {
+            baselineMap(it.name)?.let(::appendLine)
+        }
     }
 
     fun reportForConfig(artifacts: Boolean = true, modules: Boolean = true): String {

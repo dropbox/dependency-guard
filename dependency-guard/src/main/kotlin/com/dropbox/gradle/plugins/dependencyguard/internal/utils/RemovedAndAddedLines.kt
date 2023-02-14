@@ -15,28 +15,22 @@ internal data class RemovedAndAddedLines(
         }
     }.sortedBy { it.str }
 
-    val diffTextWithPlusAndMinus: String = StringBuilder().apply {
-        diffLines.forEach {
-            val prefix = if (it.added) {
-                "+ "
-            } else {
-                "- "
-            }
-            appendLine(prefix + it.str)
+    val diffTextWithPlusAndMinus: String = diffLines.joinToString(separator = "") {
+        val prefix = if (it.added) {
+            "+ "
+        } else {
+            "- "
         }
-    }.toString()
+        prefix + it.str + "\n"
+    }
 
-    val diffTextWithPlusAndMinusWithColor: String = StringBuilder().apply {
-        diffTextWithPlusAndMinus.lines().forEach {
-            appendLine(
-                if (it.startsWith("-")) {
-                    ColorTerminal.colorify(ColorTerminal.ANSI_RED, it)
-                } else if (it.startsWith("+")) {
-                    ColorTerminal.colorify(ColorTerminal.ANSI_GREEN, it)
-                } else {
-                    it
-                }
-            )
-        }
-    }.toString()
+    val diffTextWithPlusAndMinusWithColor: String = diffTextWithPlusAndMinus.lines().joinToString(separator = "") {
+        if (it.startsWith("-")) {
+            ColorTerminal.colorify(ColorTerminal.ANSI_RED, it)
+        } else if (it.startsWith("+")) {
+            ColorTerminal.colorify(ColorTerminal.ANSI_GREEN, it)
+        } else {
+            it
+        } + "\n"
+    }
 }

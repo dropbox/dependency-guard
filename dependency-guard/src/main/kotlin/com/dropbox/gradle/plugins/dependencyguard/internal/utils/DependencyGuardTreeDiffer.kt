@@ -64,12 +64,12 @@ internal class DependencyGuardTreeDiffer(
                 }
 
                 throw GradleException(
-                    StringBuilder().apply {
-                        appendLine(Messaging.dependencyChangeDetected)
-                        appendLine("Dependency Tree comparison to baseline does not match.")
-                        appendLine()
-                        appendLine(Messaging.rebaselineMessage(projectPath))
-                    }.toString()
+                    """
+                        ${Messaging.dependencyChangeDetected}
+                        Dependency Tree comparison to baseline does not match.
+                        
+                        ${Messaging.rebaselineMessage(projectPath)}
+                    """.trimIndent()
                 )
             }
         }
