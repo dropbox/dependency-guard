@@ -3,6 +3,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
@@ -50,8 +51,11 @@ internal abstract class DependencyTreeDiffTask : DefaultTask() {
         shouldBaseline: Boolean,
     ) {
         ConfigurationValidators.validateConfigurationsAreAvailable(
-            project,
-            listOf(configurationName)
+            isForRootProject = project.isRootProject(),
+            projectPath = project.path,
+            logger = project.logger,
+            availableConfigurationNames = project.configurations.map { it.name },
+            monitoredConfigurationNames = listOf(configurationName)
         )
         val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
         val projectDirOutputFile: File = DependencyGuardTreeDiffer.projectDirOutputFile(projectDependenciesDir, configurationName)

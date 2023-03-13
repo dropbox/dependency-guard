@@ -3,8 +3,8 @@ package com.dropbox.gradle.plugins.dependencyguard.internal
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import org.gradle.api.GradleException
-import org.gradle.api.Project
 import org.gradle.api.initialization.dsl.ScriptHandler
+import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 internal object ConfigurationValidators {
@@ -15,11 +15,11 @@ internal object ConfigurationValidators {
         projectPath: String,
         isForRootProject: Boolean,
         availableConfigurations: List<String>,
-        monitoredConfigurations: List<DependencyGuardConfiguration>
+        monitoredConfigurations: List<String>
     ) {
         if (isForRootProject) {
             logger.info("Configured for Root Project")
-            if (monitoredConfigurations.isNotEmpty() && monitoredConfigurations.first().configurationName != ScriptHandler.CLASSPATH_CONFIGURATION) {
+            if (monitoredConfigurations.isNotEmpty() && monitoredConfigurations.first() != ScriptHandler.CLASSPATH_CONFIGURATION) {
                 logger.error("If you wish to use dependency guard on your root project, use the following config:")
                 throw GradleException("""
                     dependencyGuard {
@@ -43,7 +43,7 @@ internal object ConfigurationValidators {
                 }
             }
 
-            val configurationNames = monitoredConfigurations.map { it.configurationName }
+            val configurationNames = monitoredConfigurations.map { it }
             require(configurationNames.isNotEmpty() && configurationNames[0].isNotBlank()) {
                 buildString {
                     appendLine("Error: No configurations provided to Dependency Guard Plugin.")
@@ -70,14 +70,17 @@ internal object ConfigurationValidators {
         )
     }
 
-    fun validateConfigurationsAreAvailable(
-        target: Project,
-        configurationNames: List<String>
-    ) {
-        val logger = target.logger
 
-        if (target.isRootProject()) {
-            if (configurationNames != listOf(ScriptHandler.CLASSPATH_CONFIGURATION)) {
+    fun validateConfigurationsAreAvailable(
+        isForRootProject: Boolean,
+        projectPath: String,
+        logger: Logger,
+        availableConfigurationNames: Collection<String>,
+        monitoredConfigurationNames: List<String>
+    ) {
+
+        if (isForRootProject) {
+            if (monitoredConfigurationNames != listOf(ScriptHandler.CLASSPATH_CONFIGURATION)) {
                 throw GradleException(
                     """
                         For the root project, the only allowed configuration is ${ScriptHandler.CLASSPATH_CONFIGURATION}.
@@ -91,22 +94,22 @@ internal object ConfigurationValidators {
             return
         }
 
-        configurationNames.forEach { configurationName ->
-            target.configurations
-                .firstOrNull { it.name == configurationName }
+        monitoredConfigurationNames.forEach { configurationName ->
+            availableConfigurationNames
+                .firstOrNull { it == configurationName }
                 ?: run {
-                    val availableClasspathConfigs = target.configurations
+                    val availableClasspathConfigs = availableConfigurationNames
                         .filter {
-                            isClasspathConfig(it.name)
+                            isClasspathConfig(it)
                         }
                     if (availableClasspathConfigs.isNotEmpty()) {
-                        logger.quiet("Available Configurations for ${target.path}:")
+                        logger.quiet("Available Configurations for $projectPath:")
                         availableClasspathConfigs.forEach {
-                            logger.quiet("* " + it.name)
+                            logger.quiet("* $it")
                         }
                     }
                     throw GradleException(
-                        "Configuration with name $configurationName was not found for ${target.path}"
+                        "Configuration with name $configurationName was not found for $projectPath"
                     )
                 }
         }
