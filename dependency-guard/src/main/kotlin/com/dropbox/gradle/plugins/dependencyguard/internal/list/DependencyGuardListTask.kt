@@ -17,6 +17,7 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCo
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.MapProperty
@@ -25,6 +26,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.kotlin.dsl.configure
 
 internal abstract class DependencyGuardListTask : DefaultTask() {
 
@@ -91,10 +93,12 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
                         // Add to exception message without color
                         exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
                     }
+
                     is DependencyListDiffResult.DiffPerformed.NoDiff -> {
                         // Print no diff message
                         println(diffResult.noDiffMessage)
                     }
+
                     is DependencyListDiffResult.BaselineCreated -> {
                         println(diffResult.baselineCreatedMessage(true))
                     }
@@ -156,16 +160,18 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         extension: DependencyGuardPluginExtension,
         shouldBaseline: Boolean
     ) {
-        ConfigurationValidators.requirePluginConfig(
-            projectPath = project.path,
-            isForRootProject = project.isRootProject(),
-            availableConfigurations = project.configurations.map { it.name },
-            monitoredConfigurations = extension.configurations.toList(),
-        )
-        ConfigurationValidators.validateConfigurationsAreAvailable(
-            target = project,
-            configurationNames = extension.configurations.map { it.configurationName }
-        )
+        project.configurations.configureEach {
+            ConfigurationValidators.requirePluginConfig(
+                projectPath = project.path,
+                isForRootProject = project.isRootProject(),
+                availableConfigurations = project.configurations.map { it.name },
+                monitoredConfigurations = extension.configurations.toList(),
+            )
+            ConfigurationValidators.validateConfigurationsAreAvailable(
+                target = project,
+                configurationNames = extension.configurations.map { it.configurationName }
+            )
+        }
 
         this.forRootProject.set(project.isRootProject())
         this.projectPath.set(project.path)
