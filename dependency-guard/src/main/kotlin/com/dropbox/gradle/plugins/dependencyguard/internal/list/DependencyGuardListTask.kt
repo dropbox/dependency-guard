@@ -80,33 +80,31 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         // Perform Diffs and Write Baselines
         val exceptionMessage = StringBuilder()
         dependencyGuardConfigurations.keys.forEach { dependencyGuardConfig ->
-            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
-            report?.let {
-                val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
-                when (diffResult) {
-                    is DependencyListDiffResult.DiffPerformed.HasDiff -> {
-                        // Print to console in color
-                        println(diffResult.createDiffMessage(withColor = true))
+            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName } ?: return@forEach
+            val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
+            when (diffResult) {
+                is DependencyListDiffResult.DiffPerformed.HasDiff -> {
+                    // Print to console in color
+                    println(diffResult.createDiffMessage(withColor = true))
 
-                        // Add to exception message without color
-                        exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
-                    }
-
-                    is DependencyListDiffResult.DiffPerformed.NoDiff -> {
-                        // Print no diff message
-                        println(diffResult.noDiffMessage)
-                    }
-
-                    is DependencyListDiffResult.BaselineCreated -> {
-                        println(diffResult.baselineCreatedMessage(true))
-                    }
+                    // Add to exception message without color
+                    exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
                 }
 
-                // If there was an exception message, throw an Exception with the message
-                if (exceptionMessage.toString().isNotEmpty()) {
-                    throw GradleException(exceptionMessage.toString())
+                is DependencyListDiffResult.DiffPerformed.NoDiff -> {
+                    // Print no diff message
+                    println(diffResult.noDiffMessage)
+                }
+
+                is DependencyListDiffResult.BaselineCreated -> {
+                    println(diffResult.baselineCreatedMessage(true))
                 }
             }
+        }
+
+        // If there was an exception message, throw an Exception with the message
+        exceptionMessage.toString().takeIf(String::isNotEmpty)?.let {
+            throw GradleException(it)
         }
     }
 
