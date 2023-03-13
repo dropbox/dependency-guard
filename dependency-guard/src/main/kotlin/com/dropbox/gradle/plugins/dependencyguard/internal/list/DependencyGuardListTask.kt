@@ -18,7 +18,9 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
@@ -32,7 +34,8 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
     }
 
-    private fun generateReportForConfiguration(
+    fun generateReportForConfiguration(
+        projectPath: String,
         dependencyGuardConfiguration: DependencyGuardConfiguration,
         resolvedComponentResult: ResolvedComponentResult,
     ): DependencyGuardReportData {
@@ -41,7 +44,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         val dependencies = DependencyVisitor.traverseComponentDependencies(resolvedComponentResult)
 
         return DependencyGuardReportData(
-            projectPath = projectPath.get(),
+            projectPath = projectPath,
             configurationName = configurationName,
             allowedFilter = dependencyGuardConfiguration.allowedFilter,
             baselineMap = dependencyGuardConfiguration.baselineMap,
@@ -59,6 +62,9 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     abstract val projectPath: Property<String>
 
     @get:Input
+    abstract val availableConfigurationNames: ListProperty<String>
+
+    @get:Input
     abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
     @get:OutputDirectory
@@ -69,7 +75,23 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     internal fun execute() {
         val dependencyGuardConfigurations = monitoredConfigurationsMap.get()
 
-        val reports = dependencyGuardConfigurations.map { generateReportForConfiguration(it.key, it.value.get()) }
+        // Validate Configuration
+        ConfigurationValidators.validateListTaskConfiguration(
+            projectPath = projectPath.get(),
+            isForRootProject = forRootProject.get(),
+            logger = logger,
+            availableConfigurationNames = availableConfigurationNames.get(),
+            monitoredConfigurations = dependencyGuardConfigurations.keys
+        )
+
+        // Execute Report
+        val reports = dependencyGuardConfigurations.map {
+            generateReportForConfiguration(
+                projectPath = projectPath.get(),
+                dependencyGuardConfiguration = it.key,
+                resolvedComponentResult = it.value.get()
+            )
+        }
 
         // Throw Error if any Disallowed Dependencies are Found
         val reportsWithDisallowedDependencies = reports.filter { it.disallowed.isNotEmpty() }
@@ -82,7 +104,13 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         dependencyGuardConfigurations.keys.forEach { dependencyGuardConfig ->
             val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
             report?.let {
-                val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
+                val diffResult: DependencyListDiffResult =
+                    writeListReport(
+                        dependencyGuardConfig = dependencyGuardConfig,
+                        report = report,
+                        shouldBaseline = shouldBaseline.get(),
+                        projectDirectoryDependenciesDir = projectDirectoryDependenciesDir.get(),
+                    )
                 when (diffResult) {
                     is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                         // Print to console in color
@@ -91,10 +119,12 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
                         // Add to exception message without color
                         exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
                     }
+
                     is DependencyListDiffResult.DiffPerformed.NoDiff -> {
                         // Print no diff message
                         println(diffResult.noDiffMessage)
                     }
+
                     is DependencyListDiffResult.BaselineCreated -> {
                         println(diffResult.baselineCreatedMessage(true))
                     }
@@ -111,9 +141,11 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     /**
      * @return Whether changes were detected
      */
-    private fun writeListReport(
+    fun writeListReport(
         dependencyGuardConfig: DependencyGuardConfiguration,
-        report: DependencyGuardReportData
+        report: DependencyGuardReportData,
+        shouldBaseline: Boolean,
+        projectDirectoryDependenciesDir: Directory,
     ): DependencyListDiffResult {
         val reportType = DependencyGuardReportType.LIST
         val reportWriter = DependencyGuardListReportWriter(
@@ -123,12 +155,12 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
 
         return reportWriter.writeReport(
             projectDirOutputFile = OutputFileUtils.projectDirOutputFile(
-                projectDirectory = projectDirectoryDependenciesDir.get(),
+                projectDirectory = projectDirectoryDependenciesDir,
                 configurationName = report.configurationName,
                 reportType = reportType,
             ),
             report = report,
-            shouldBaseline = shouldBaseline.get()
+            shouldBaseline = shouldBaseline
         )
     }
 
@@ -137,7 +169,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
             reportsWithDisallowedDependencies.forEach { report ->
                 val disallowed = report.disallowed
                 appendLine(
-                    """Disallowed Dependencies found in ${projectPath.get()} for the configuration "${report.configurationName}" """
+                    """Disallowed Dependencies found in ${report.projectPath} for the configuration "${report.configurationName}" """
                 )
                 disallowed.forEach {
                     appendLine("\"${it.name}\",")
@@ -152,26 +184,17 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     }
 
     internal fun setParams(
-        project: Project,
+        target: Project,
         extension: DependencyGuardPluginExtension,
-        shouldBaseline: Boolean
+        shouldBaseline: Boolean,
+        availableConfigurationNames: Collection<String>,
     ) {
-        ConfigurationValidators.requirePluginConfig(
-            projectPath = project.path,
-            isForRootProject = project.isRootProject(),
-            availableConfigurations = project.configurations.map { it.name },
-            monitoredConfigurations = extension.configurations.toList(),
-        )
-        ConfigurationValidators.validateConfigurationsAreAvailable(
-            target = project,
-            configurationNames = extension.configurations.map { it.configurationName }
-        )
-
-        this.forRootProject.set(project.isRootProject())
-        this.projectPath.set(project.path)
-        this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
+        this.forRootProject.set(target.isRootProject())
+        this.projectPath.set(target.path)
+        this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(target, extension.configurations))
         this.shouldBaseline.set(shouldBaseline)
-        val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
+        this.availableConfigurationNames.set(availableConfigurationNames)
+        val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(target)
         this.projectDirectoryDependenciesDir.set(projectDirDependenciesDir)
 
         declareCompatibilities()

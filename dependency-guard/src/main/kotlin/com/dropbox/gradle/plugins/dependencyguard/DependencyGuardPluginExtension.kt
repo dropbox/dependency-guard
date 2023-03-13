@@ -1,8 +1,8 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
+import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.model.ObjectFactory
-import javax.inject.Inject
 
 /**
  * Extension for [DependencyGuardPlugin] which leverages [DependencyGuardConfiguration]
@@ -10,6 +10,7 @@ import javax.inject.Inject
 public open class DependencyGuardPluginExtension @Inject constructor(
     private val objects: ObjectFactory
 ) {
+
     internal val configurations = objects.domainObjectContainer(DependencyGuardConfiguration::class.java)
 
     public fun configuration(name: String) {

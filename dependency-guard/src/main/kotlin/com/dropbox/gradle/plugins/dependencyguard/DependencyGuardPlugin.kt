@@ -65,9 +65,11 @@ public class DependencyGuardPlugin : Plugin<Project> {
         ) {
             val task = this
             task.setParams(
-                project = target,
+                target = target,
                 extension = extension,
-                shouldBaseline = true
+                shouldBaseline = true,
+                availableConfigurationNames = target.configurations.map { it.name },
+
             )
         }
     }
@@ -82,9 +84,10 @@ public class DependencyGuardPlugin : Plugin<Project> {
         ) {
             val task = this
             task.setParams(
-                project = target,
+                target = target,
                 extension = extension,
-                shouldBaseline = false
+                shouldBaseline = false,
+                availableConfigurationNames = target.configurations.map { it.name },
             )
         }
     }

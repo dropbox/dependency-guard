@@ -3,6 +3,7 @@ package com.dropbox.gradle.plugins.dependencyguard.internal.tree
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyGuardTreeDiffer
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
@@ -11,12 +12,9 @@ import java.io.File
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
-import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
@@ -49,14 +47,19 @@ internal abstract class DependencyTreeDiffTask : DefaultTask() {
         configurationName: String,
         shouldBaseline: Boolean,
     ) {
+        val projectPath = project.path
+
         ConfigurationValidators.validateConfigurationsAreAvailable(
-            project,
-            listOf(configurationName)
+            forRootProject = project.isRootProject(),
+            logger = logger,
+            projectPath = projectPath,
+            availableConfigurationNames = project.configurations.map { it.name },
+            monitoredConfigurationNames = listOf(configurationName)
         )
+
         val projectDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
         val projectDirOutputFile: File = DependencyGuardTreeDiffer.projectDirOutputFile(projectDependenciesDir, configurationName)
         val buildDirOutputFile: File = DependencyGuardTreeDiffer.buildDirOutputFile(project.layout.buildDirectory.get(), configurationName)
-        val projectPath = project.path
         val resolvedComponentResult = project.projectConfigurations.getResolvedComponentResult(configurationName)
 
         this.resolvedComponentResult.set(resolvedComponentResult)
