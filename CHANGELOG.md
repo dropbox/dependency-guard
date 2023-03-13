@@ -1,5 +1,14 @@
 # Change Log
 
+## Version 0.4.2 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.1...0.4.2))
+
+_2023-03-13_
+
+* Fix validation ordering issues [#68](https://github.com/dropbox/dependency-guard/issues/68) by [@handstandsam](https://github.com/handstandsam) in [#86](https://github.com/dropbox/dependency-guard/pull/86)
+* Split kotlin and dokka versions references by [@SimonMarquis](https://github.com/SimonMarquis) in [#81](https://github.com/dropbox/dependency-guard/pull/81)
+* Kotlin-ify StringBuilder constructs and replace with simpler raw Strings by [@SimonMarquis](https://github.com/SimonMarquis) in [#80](https://github.com/dropbox/dependency-guard/pull/80)
+* Using Primitives in Static Validator Methods by [@handstandsam](https://github.com/handstandsam) in [#85](https://github.com/dropbox/dependency-guard/pull/85)
+
 ## Version 0.4.1 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.0...0.4.1))
 
 _2023-01-23_
