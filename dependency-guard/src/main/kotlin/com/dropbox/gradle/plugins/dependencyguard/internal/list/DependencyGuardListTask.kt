@@ -133,7 +133,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     }
 
     private fun throwExceptionAboutDisallowedDependencies(reportsWithDisallowedDependencies: List<DependencyGuardReportData>) {
-        val errorMessage = StringBuilder().apply {
+        val errorMessage = buildString {
             reportsWithDisallowedDependencies.forEach { report ->
                 val disallowed = report.disallowed
                 appendLine(
@@ -146,7 +146,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
             }
             appendLine("These dependencies are included and must be removed based on the configured 'allowedFilter'.")
             appendLine()
-        }.toString()
+        }
 
         throw GradleException(errorMessage)
     }
