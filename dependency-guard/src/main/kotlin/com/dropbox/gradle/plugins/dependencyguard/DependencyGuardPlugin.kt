@@ -1,7 +1,10 @@
 package com.dropbox.gradle.plugins.dependencyguard
 
+import com.dropbox.gradle.plugins.dependencyguard.internal.ConfigurationValidators
 import com.dropbox.gradle.plugins.dependencyguard.internal.DependencyTreeDiffTaskNames
+import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.list.DependencyGuardListTask
+import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.tree.DependencyTreeDiffTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -43,6 +46,33 @@ public class DependencyGuardPlugin : Plugin<Project> {
             target = target,
             dependencyGuardTask = dependencyGuardTask
         )
+
+        validateConfigurationAfterEvaluate(target, extension)
+    }
+
+    /**
+     * It's recommended to avoid `afterEvaluate` but in this case we are doing a validation of inputs
+     *
+     * Without adding this, there were cases when the `target.configurations` were not all available yet.
+     */
+    private fun validateConfigurationAfterEvaluate(target: Project, extension: DependencyGuardPluginExtension) {
+        target.afterEvaluate {
+            val availableConfigurationNames = target.configurations.map { it.name }
+            val monitoredConfigurationNames = extension.configurations.map { it.configurationName }
+            ConfigurationValidators.requirePluginConfig(
+                projectPath = target.path,
+                isForRootProject = target.isRootProject(),
+                availableConfigurations = availableConfigurationNames,
+                monitoredConfigurations = monitoredConfigurationNames,
+            )
+            ConfigurationValidators.validateConfigurationsAreAvailable(
+                projectPath = target.path,
+                isForRootProject = target.isRootProject(),
+                logger = target.logger,
+                availableConfigurationNames = availableConfigurationNames,
+                monitoredConfigurationNames = monitoredConfigurationNames
+            )
+        }
     }
 
     private fun attachToCheckTask(target: Project, dependencyGuardTask: TaskProvider<DependencyGuardListTask>) {

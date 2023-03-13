@@ -1,6 +1,5 @@
 package com.dropbox.gradle.plugins.dependencyguard.internal
 
-import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardConfiguration
 import com.dropbox.gradle.plugins.dependencyguard.DependencyGuardPlugin
 import org.gradle.api.GradleException
 import org.gradle.api.initialization.dsl.ScriptHandler
@@ -21,11 +20,13 @@ internal object ConfigurationValidators {
             logger.info("Configured for Root Project")
             if (monitoredConfigurations.isNotEmpty() && monitoredConfigurations.first() != ScriptHandler.CLASSPATH_CONFIGURATION) {
                 logger.error("If you wish to use dependency guard on your root project, use the following config:")
-                throw GradleException("""
+                throw GradleException(
+                    """
                     dependencyGuard {
                       configuration("${ScriptHandler.CLASSPATH_CONFIGURATION}")
                     }
-                """.trimIndent())
+                """.trimIndent()
+                )
             }
         } else {
             val availableConfigNames = availableConfigurations
@@ -94,22 +95,22 @@ internal object ConfigurationValidators {
             return
         }
 
-        monitoredConfigurationNames.forEach { configurationName ->
+        monitoredConfigurationNames.forEach { monitoredConfigurationName ->
             availableConfigurationNames
-                .firstOrNull { it == configurationName }
+                .firstOrNull { it == monitoredConfigurationName }
                 ?: run {
                     val availableClasspathConfigs = availableConfigurationNames
                         .filter {
                             isClasspathConfig(it)
                         }
                     if (availableClasspathConfigs.isNotEmpty()) {
-                        logger.quiet("Available Configurations for $projectPath:")
+                        logger.quiet("Configuration with name $monitoredConfigurationName was not found. Available Configurations for $projectPath are:")
                         availableClasspathConfigs.forEach {
                             logger.quiet("* $it")
                         }
                     }
                     throw GradleException(
-                        "Configuration with name $configurationName was not found for $projectPath"
+                        "Configuration with name $monitoredConfigurationName was not found for $projectPath"
                     )
                 }
         }
