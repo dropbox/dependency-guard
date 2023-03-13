@@ -158,20 +158,6 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         extension: DependencyGuardPluginExtension,
         shouldBaseline: Boolean
     ) {
-        ConfigurationValidators.requirePluginConfig(
-            projectPath = project.path,
-            isForRootProject = project.isRootProject(),
-            availableConfigurations = project.configurations.map { it.name },
-            monitoredConfigurations = extension.configurations.map { it.configurationName },
-        )
-        ConfigurationValidators.validateConfigurationsAreAvailable(
-            isForRootProject = project.isRootProject(),
-            projectPath = project.path,
-            logger = project.logger,
-            availableConfigurationNames = project.configurations.map { it.name },
-            monitoredConfigurationNames = extension.configurations.map { it.configurationName }
-        )
-
         this.forRootProject.set(project.isRootProject())
         this.projectPath.set(project.path)
         this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
