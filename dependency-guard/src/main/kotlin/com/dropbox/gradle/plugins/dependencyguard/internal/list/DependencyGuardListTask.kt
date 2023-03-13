@@ -91,10 +91,12 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
                         // Add to exception message without color
                         exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
                     }
+
                     is DependencyListDiffResult.DiffPerformed.NoDiff -> {
                         // Print no diff message
                         println(diffResult.noDiffMessage)
                     }
+
                     is DependencyListDiffResult.BaselineCreated -> {
                         println(diffResult.baselineCreatedMessage(true))
                     }
@@ -160,11 +162,14 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
             projectPath = project.path,
             isForRootProject = project.isRootProject(),
             availableConfigurations = project.configurations.map { it.name },
-            monitoredConfigurations = extension.configurations.toList(),
+            monitoredConfigurations = extension.configurations.map { it.configurationName },
         )
         ConfigurationValidators.validateConfigurationsAreAvailable(
-            target = project,
-            configurationNames = extension.configurations.map { it.configurationName }
+            isForRootProject = project.isRootProject(),
+            projectPath = project.path,
+            logger = project.logger,
+            availableConfigurationNames = project.configurations.map { it.name },
+            monitoredConfigurationNames = extension.configurations.map { it.configurationName }
         )
 
         this.forRootProject.set(project.isRootProject())
