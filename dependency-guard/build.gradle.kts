@@ -88,7 +88,7 @@ testing {
       useJUnitJupiter()
       dependencies {
         // gradleTest test suite depends on the production code in tests
-        implementation.invoke(project())
+        implementation(project())
         implementation(libs.truth)
       }
 
