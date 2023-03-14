@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.4.3 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.2...0.4.3))
+
+_2023-03-14_
+
+* Fixes [#87](https://github.com/dropbox/dependency-guard/issues/87): Race Condition during `afterEvaluate` Configuration Validation in 0.4.2 by [@handstandsam](https://github.com/handstandsam) in [#90](https://github.com/dropbox/dependency-guard/pull/90)
+
 ## Version 0.4.2 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.1...0.4.2))
 
 _2023-03-13_
