@@ -19,14 +19,20 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import javax.inject.Inject
 
-internal abstract class DependencyGuardListTask : DefaultTask() {
+internal abstract class DependencyGuardListTask @Inject constructor(
+    objects: ObjectFactory,
+    providers: ProviderFactory
+) : DefaultTask() {
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
@@ -61,6 +67,10 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
     @get:Input
     abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
+    @get:Input
+    val logVerbosely: Property<Boolean> = objects.property(Boolean::class.java)
+        .convention(providers.gradleProperty("dependencyGuard.verbose").map { it.toBoolean() }.orElse(false))
+
     @get:OutputDirectory
     abstract val projectDirectoryDependenciesDir: DirectoryProperty
 
@@ -86,7 +96,7 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
                 when (diffResult) {
                     is DependencyListDiffResult.DiffPerformed.HasDiff -> {
                         // Print to console in color
-                        println(diffResult.createDiffMessage(withColor = true))
+                        logger.error(diffResult.createDiffMessage(withColor = true))
 
                         // Add to exception message without color
                         exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
@@ -94,11 +104,16 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
 
                     is DependencyListDiffResult.DiffPerformed.NoDiff -> {
                         // Print no diff message
-                        println(diffResult.noDiffMessage)
+                        val message = diffResult.noDiffMessage
+                        if (logVerbosely.get()) {
+                            logger.lifecycle(message)
+                        } else {
+                            logger.debug(message)
+                        }
                     }
 
                     is DependencyListDiffResult.BaselineCreated -> {
-                        println(diffResult.baselineCreatedMessage(true))
+                        logger.lifecycle(diffResult.baselineCreatedMessage(true))
                     }
                 }
 
