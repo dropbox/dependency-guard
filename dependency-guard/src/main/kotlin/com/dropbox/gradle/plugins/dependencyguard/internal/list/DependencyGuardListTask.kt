@@ -158,9 +158,20 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         extension: DependencyGuardPluginExtension,
         shouldBaseline: Boolean
     ) {
+        val resolvedConfigurationsMap = resolveMonitoredConfigurationsMap(
+            project = project,
+            monitoredConfigurations = extension.configurations
+        )
+
+        ConfigurationValidators.validatePluginConfiguration(
+            project = project,
+            extension = extension,
+            resolvedConfigurationsMap = resolvedConfigurationsMap,
+        )
+
         this.forRootProject.set(project.isRootProject())
         this.projectPath.set(project.path)
-        this.monitoredConfigurationsMap.set(resolveMonitoredConfigurationsMap(project, extension.configurations))
+        this.monitoredConfigurationsMap.set(resolvedConfigurationsMap)
         this.shouldBaseline.set(shouldBaseline)
         val projectDirDependenciesDir = OutputFileUtils.projectDirDependenciesDir(project)
         this.projectDirectoryDependenciesDir.set(projectDirDependenciesDir)
@@ -168,14 +179,22 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         declareCompatibilities()
     }
 
+    /**
+     * Attempts to resolve configurations, and returns only the resolved ones
+     */
     private fun resolveMonitoredConfigurationsMap(
         project: Project,
         monitoredConfigurations: Collection<DependencyGuardConfiguration>,
     ): Map<DependencyGuardConfiguration, Provider<ResolvedComponentResult>> {
-        val configurationContainer = project.projectConfigurations
-
-        return monitoredConfigurations.associateWith {
-            configurationContainer.getResolvedComponentResult(it.configurationName)
+        val resolvedConfigurationsMap = mutableMapOf<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>()
+        monitoredConfigurations.forEach { monitoredConfiguration ->
+            val resolvedComponentResultForConfiguration =
+                project.projectConfigurations.getResolvedComponentResult(monitoredConfiguration.configurationName)
+            if (resolvedComponentResultForConfiguration != null) {
+                resolvedConfigurationsMap[monitoredConfiguration] = resolvedComponentResultForConfiguration
+            }
         }
+        return resolvedConfigurationsMap
     }
+
 }

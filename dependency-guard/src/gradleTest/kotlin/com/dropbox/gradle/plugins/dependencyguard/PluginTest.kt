@@ -266,7 +266,7 @@ class PluginTest {
             args = arrayOf(":lib:dependencyGuard")
         )
 
-        assertThat(result.output).contains("Error: No configurations provided to Dependency Guard Plugin.")
+        assertThat(result.output).contains("Error: No configurations provided to Dependency Guard Plugin for project :lib")
     }
 
     @ParameterizedPluginTest
@@ -283,6 +283,6 @@ class PluginTest {
             args = arrayOf(":lib:dependencyGuard")
         )
 
-        assertThat(result.output).contains("Configuration with name releaseCompileClasspath was not found for :lib")
+        assertThat(result.output).contains("Dependency Guard could not resolve the configurations named [releaseCompileClasspath] for :lib")
     }
 }

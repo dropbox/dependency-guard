@@ -20,8 +20,8 @@ internal val Project.projectConfigurations: ConfigurationContainer
         configurations
     }
 
-internal fun ConfigurationContainer.getResolvedComponentResult(name: String): Provider<ResolvedComponentResult> = this
-    .getByName(name)
-    .incoming
-    .resolutionResult
-    .rootComponent
+internal fun ConfigurationContainer.getResolvedComponentResult(name: String): Provider<ResolvedComponentResult>? = this
+    .findByName(name)
+    ?.incoming
+    ?.resolutionResult
+    ?.rootComponent
