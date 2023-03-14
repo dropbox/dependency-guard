@@ -63,6 +63,40 @@ class PluginTest {
         )
 
         assertThat(result.output)
+            .doesNotContain("No Dependency Changes Found in :lib for configuration \"compileClasspath\"")
+
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.txt",
+            contentFile = "simple/list_before_update.txt",
+        )
+
+        project.assertFileExistsWithContentEqual(
+            filename = "lib/dependencies/compileClasspath.tree.txt",
+            contentFile = "simple/tree_before_update.txt",
+        )
+    }
+
+    @ParameterizedPluginTest
+    fun `guard with no dependencies changes - verbose`(
+        args: ParameterizedPluginArgs,
+    ): Unit = SimpleProject(tree = true).use { project ->
+        // create baseline
+        build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
+            project = project,
+            args = arrayOf(":lib:dependencyGuard")
+        )
+
+        // check with no dependencies changes
+        val result = build(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
+            project = project,
+            args = arrayOf(":lib:dependencyGuard", "-PdependencyGuard.verbose=true")
+        )
+
+        assertThat(result.output)
             .contains("No Dependency Changes Found in :lib for configuration \"compileClasspath\"")
 
         project.assertFileExistsWithContentEqual(
