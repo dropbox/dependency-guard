@@ -26,12 +26,11 @@ internal data class RemovedAndAddedLines(
 
     val diffTextWithPlusAndMinusWithColor: String = diffTextWithPlusAndMinus.lines().joinToString(separator = "") {
         val line = if (it.startsWith("-")) {
-            ColorTerminal.colorify(ColorTerminal.ANSI_RED, it)
+            ColorTerminal.colorify(ColorTerminal.ANSI_RED, it) + '\n'
         } else if (it.startsWith("+")) {
-            ColorTerminal.colorify(ColorTerminal.ANSI_GREEN, it)
+            ColorTerminal.colorify(ColorTerminal.ANSI_GREEN, it) + '\n'
         } else {
             it
         }
-        line + '\n'
     }
 }
