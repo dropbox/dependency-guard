@@ -12,6 +12,9 @@ import com.dropbox.gradle.plugins.dependencyguard.internal.getResolvedComponentR
 import com.dropbox.gradle.plugins.dependencyguard.internal.isRootProject
 import com.dropbox.gradle.plugins.dependencyguard.internal.projectConfigurations
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult.BaselineCreated
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult.DiffPerformed.HasDiff
+import com.dropbox.gradle.plugins.dependencyguard.internal.utils.DependencyListDiffResult.DiffPerformed.NoDiff
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.OutputFileUtils
 import com.dropbox.gradle.plugins.dependencyguard.internal.utils.Tasks.declareCompatibilities
 import org.gradle.api.DefaultTask
@@ -80,33 +83,23 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
         // Perform Diffs and Write Baselines
         val exceptionMessage = StringBuilder()
         dependencyGuardConfigurations.keys.forEach { dependencyGuardConfig ->
-            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName }
-            report?.let {
-                val diffResult: DependencyListDiffResult = writeListReport(dependencyGuardConfig, report)
-                when (diffResult) {
-                    is DependencyListDiffResult.DiffPerformed.HasDiff -> {
-                        // Print to console in color
-                        println(diffResult.createDiffMessage(withColor = true))
+            val report = reports.firstOrNull { it.configurationName == dependencyGuardConfig.configurationName } ?: return@forEach
+            when (val diff = writeListReport(dependencyGuardConfig, report)) {
+                is HasDiff -> {
+                    // Print to console in color
+                    println(diff.createDiffMessage(withColor = true))
 
-                        // Add to exception message without color
-                        exceptionMessage.appendLine(diffResult.createDiffMessage(withColor = false))
-                    }
-
-                    is DependencyListDiffResult.DiffPerformed.NoDiff -> {
-                        // Print no diff message
-                        println(diffResult.noDiffMessage)
-                    }
-
-                    is DependencyListDiffResult.BaselineCreated -> {
-                        println(diffResult.baselineCreatedMessage(true))
-                    }
+                    // Add to exception message without color
+                    exceptionMessage.appendLine(diff.createDiffMessage(withColor = false))
                 }
-
-                // If there was an exception message, throw an Exception with the message
-                if (exceptionMessage.toString().isNotEmpty()) {
-                    throw GradleException(exceptionMessage.toString())
-                }
+                is NoDiff -> println(diff.noDiffMessage)
+                is BaselineCreated -> println(diff.baselineCreatedMessage(withColor = true))
             }
+        }
+
+        // If there was an exception message, throw an Exception with the message
+        exceptionMessage.toString().takeIf(String::isNotEmpty)?.let {
+            throw GradleException(it)
         }
     }
 
