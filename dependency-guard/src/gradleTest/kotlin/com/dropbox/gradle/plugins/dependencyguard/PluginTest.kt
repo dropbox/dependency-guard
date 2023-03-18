@@ -3,6 +3,7 @@ package com.dropbox.gradle.plugins.dependencyguard
 import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder.build
 import com.dropbox.gradle.plugins.dependencyguard.fixture.Builder.buildAndFail
 import com.dropbox.gradle.plugins.dependencyguard.fixture.ConfiguredProject
+import com.dropbox.gradle.plugins.dependencyguard.fixture.EmptyProject
 import com.dropbox.gradle.plugins.dependencyguard.fixture.FullProject
 import com.dropbox.gradle.plugins.dependencyguard.fixture.SimpleProject
 import com.dropbox.gradle.plugins.dependencyguard.util.assertFileExistsWithContentEqual
@@ -285,4 +286,28 @@ class PluginTest {
 
         assertThat(result.output).contains("Dependency Guard could not resolve the configurations named [releaseCompileClasspath] for :lib")
     }
+
+    @ParameterizedPluginTest
+    fun `prints error when missing configuration block`(args: ParameterizedPluginArgs): Unit = EmptyProject().use { project ->
+        val result = buildAndFail(
+            gradleVersion = args.gradleVersion,
+            withConfigurationCache = args.withConfigurationCache,
+            project = project,
+            args = arrayOf("dependencyGuard")
+        )
+
+        assertThat(result.output)
+            .contains("If you wish to use Dependency Guard on your root project, use the following config:")
+
+        assertThat(result.output).contains(
+            """
+            A problem occurred configuring root project 'project-under-test'.
+            > Could not create task ':dependencyGuard'.
+               > dependencyGuard {
+                   configuration("classpath")
+                 }
+            """.trimIndent()
+        )
+    }
+
 }
