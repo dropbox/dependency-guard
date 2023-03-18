@@ -267,7 +267,19 @@ class PluginTest {
             args = arrayOf(":lib:dependencyGuard")
         )
 
-        assertThat(result.output).contains("Error: No configurations provided to Dependency Guard Plugin for project :lib")
+        assertThat(result.output).contains(
+            """
+            > Could not create task ':lib:dependencyGuard'.
+               > Error: No configurations provided to Dependency Guard Plugin for project :lib
+                 Here are some valid configurations you could use.
+                 
+                 dependencyGuard {
+                   configuration("compileClasspath")
+                   configuration("runtimeClasspath")
+                   configuration("testCompileClasspath")
+                   configuration("testRuntimeClasspath")
+                 }
+            """.trimIndent()
     }
 
     @ParameterizedPluginTest
