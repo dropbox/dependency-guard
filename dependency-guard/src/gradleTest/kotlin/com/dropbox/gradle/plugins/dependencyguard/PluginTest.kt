@@ -280,6 +280,7 @@ class PluginTest {
                    configuration("testRuntimeClasspath")
                  }
             """.trimIndent()
+        )
     }
 
     @ParameterizedPluginTest
