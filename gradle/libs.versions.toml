@@ -1,6 +1,6 @@
 [versions]
 kotlin = "1.6.10"
-dokka = "1.6.10"
+dokka = "1.8.10"
 androidx-activity = "1.4.0"
 
 [libraries]
