@@ -4,8 +4,19 @@ include(":sample:module2")
 
 rootProject.name = "dependency-guard-root"
 
-includeBuild("dependency-guard") {
-  dependencySubstitution {
-    substitute(module("com.dropbox.dependency-guard:dependency-guard")).using(project(":"))
-  }
+pluginManagement {
+    includeBuild("dependency-guard")
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
 }

@@ -244,7 +244,7 @@ Baseline files are created in the "dependencies" folder in your module.  The fol
 
 Snapshot versions are under development and change, but can be used by adding in the snapshot repository
 ```groovy
-// Root build.gradle
+// Root build.gradle.kts
 buildscript {
     repositories {
         mavenCentral()
