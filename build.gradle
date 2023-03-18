@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
         classpath("org.jlleitschuh.gradle:ktlint-gradle:10.2.1")
-        classpath("org.jacoco:org.jacoco.core:0.8.7")
+        classpath("org.jacoco:org.jacoco.core:0.8.8")
         classpath("com.android.tools.build:gradle:7.1.3")
         classpath("com.dropbox.dependency-guard:dependency-guard")
     }
