@@ -1,7 +1,7 @@
 # 🛡️ Dependency Guard
 [![LICENSE](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/dropbox/dependency-guard/blob/main/LICENSE.txt)
-[![Latest Stable](https://img.shields.io/badge/dynamic/xml?url=https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Stable&color=blue&query=.//versioning/latest)](https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/)
-[![Latest Snapshot](https://img.shields.io/badge/dynamic/xml?url=https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Snapshot&color=orange&query=.//versioning/latest)](https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/com.dropbox.dependency-guard.gradle.plugin/)
+[![Latest Stable][maven-stable-badge]][maven-stable]
+[![Latest Snapshot][maven-snapshot-badge]][maven-snapshot]
 [![CI](https://github.com/handstandsam/kmp4free/workflows/CI/badge.svg)](https://github.com/dropbox/dependency-guard/actions?query=branch%3Amain)
 
 A Gradle plugin that helps you **guard against unintentional dependency changes**.
@@ -40,6 +40,7 @@ As platform engineers, we do a lot of library upgrades, and needed insight into 
 
 # Setup and Configuration
 ## Step 1: Adding The Dependency Guard Gradle Plugin and Baselining
+[![Latest Stable][maven-stable-badge]][maven-stable]
 ```kotlin
 // sample/app/build.gradle.kts
 plugins {
@@ -242,6 +243,8 @@ Baseline files are created in the "dependencies" folder in your module.  The fol
 
 ## Adding to the Buildscript Classpath
 
+[![Latest Snapshot][maven-snapshot-badge]][maven-snapshot]
+
 Snapshot versions are under development and change, but can be used by adding in the snapshot repository
 ```groovy
 // Root build.gradle
@@ -254,7 +257,7 @@ buildscript {
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
-        classpath("com.dropbox.dependency-guard:dependency-guard:0.4.3")
+        classpath("com.dropbox.dependency-guard:dependency-guard:x.y.z-SNAPSHOT")
     }
 }
 ```
@@ -276,3 +279,7 @@ buildscript {
     limitations under the License.
 
 
+[maven-stable]: https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/
+[maven-stable-badge]: https://img.shields.io/badge/dynamic/xml?url=https://repo1.maven.org/maven2/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Stable&color=blue&query=.//versioning/latest
+[maven-snapshot]: https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/com.dropbox.dependency-guard.gradle.plugin/
+[maven-snapshot-badge]: https://img.shields.io/badge/dynamic/xml?url=https://s01.oss.sonatype.org/content/repositories/snapshots/com/dropbox/dependency-guard/dependency-guard/maven-metadata.xml&label=Latest%20Snapshot&color=orange&query=.//versioning/latest
