@@ -1,0 +1,11 @@
+include(":sample:app")
+include(":sample:module1")
+include(":sample:module2")
+
+rootProject.name = "dependency-guard-root"
+
+includeBuild("dependency-guard") {
+  dependencySubstitution {
+    substitute(module("com.dropbox.dependency-guard:dependency-guard")).using(project(":"))
+  }
+}
