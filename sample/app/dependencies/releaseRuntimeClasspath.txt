@@ -17,10 +17,10 @@ androidx.savedstate:savedstate:1.1.0
 androidx.tracing:tracing:1.0.0
 androidx.versionedparcelable:versionedparcelable:1.1.1
 com.google.guava:listenablefuture:1.0
-org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10
-org.jetbrains.kotlin:kotlin-stdlib:1.6.10
+org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.10
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10
+org.jetbrains.kotlin:kotlin-stdlib:1.8.10
 org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.2
 org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2
 org.jetbrains:annotations:13.0
