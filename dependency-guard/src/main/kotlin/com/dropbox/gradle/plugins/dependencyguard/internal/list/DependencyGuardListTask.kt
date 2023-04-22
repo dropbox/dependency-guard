@@ -32,10 +32,7 @@ import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import javax.inject.Inject
 
-internal abstract class DependencyGuardListTask @Inject constructor(
-    objects: ObjectFactory,
-    providers: ProviderFactory
-) : DefaultTask() {
+internal abstract class DependencyGuardListTask : DefaultTask() {
 
     init {
         group = DependencyGuardPlugin.DEPENDENCY_GUARD_TASK_GROUP
@@ -70,10 +67,6 @@ internal abstract class DependencyGuardListTask @Inject constructor(
     @get:Input
     abstract val monitoredConfigurationsMap: MapProperty<DependencyGuardConfiguration, Provider<ResolvedComponentResult>>
 
-    @get:Input
-    val logVerbosely: Property<Boolean> = objects.property(Boolean::class.java)
-        .convention(providers.gradleProperty("dependencyGuard.verbose").map { it.toBoolean() }.orElse(false))
-
     @get:OutputDirectory
     abstract val projectDirectoryDependenciesDir: DirectoryProperty
 
@@ -97,13 +90,13 @@ internal abstract class DependencyGuardListTask @Inject constructor(
             when (val diff = writeListReport(dependencyGuardConfig, report)) {
                 is HasDiff -> {
                     // Print to console in color
-                    println(diff.createDiffMessage(withColor = true))
+                    logger.error(diff.createDiffMessage(withColor = true))
 
                     // Add to exception message without color
                     exceptionMessage.appendLine(diff.createDiffMessage(withColor = false))
                 }
-                is NoDiff -> println(diff.noDiffMessage)
-                is BaselineCreated -> println(diff.baselineCreatedMessage(withColor = true))
+                is NoDiff -> logger.debug(diff.noDiffMessage)
+                is BaselineCreated -> logger.lifecycle(diff.baselineCreatedMessage(withColor = true))
             }
         }
 

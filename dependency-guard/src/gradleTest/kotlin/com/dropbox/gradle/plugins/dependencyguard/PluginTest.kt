@@ -93,7 +93,7 @@ class PluginTest {
             gradleVersion = args.gradleVersion,
             withConfigurationCache = args.withConfigurationCache,
             project = project,
-            args = arrayOf(":lib:dependencyGuard", "-PdependencyGuard.verbose=true")
+            args = arrayOf(":lib:dependencyGuard", "--debug")
         )
 
         assertThat(result.output)
