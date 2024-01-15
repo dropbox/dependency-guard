@@ -47,7 +47,7 @@ plugins {
 }
 ```
 
-## Step 2: Run `./gradle dependencyGuard` and Configure
+## Step 2: Run `./gradlew dependencyGuard` and Configure
 This will show a list of available configuration(s) for this Gradle module. 
 
 You can choose the configurations you want to monitor.  
