@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 0.5.0 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.3...0.4.4))
+
+_2024-02-05_
+
+* Fixes [#82](https://github.com/dropbox/dependency-guard/issues/82): Feature request: suppressible logging output
+
 ## Version 0.4.3 ([All Changes](https://github.com/dropbox/dependency-guard/compare/0.4.2...0.4.3))
 
 _2023-03-14_

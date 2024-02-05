@@ -43,7 +43,7 @@ As platform engineers, we do a lot of library upgrades, and needed insight into 
 ```kotlin
 // sample/app/build.gradle.kts
 plugins {
-  id("com.dropbox.dependency-guard") version "0.4.3"
+  id("com.dropbox.dependency-guard") version "0.5.0"
 }
 ```
 
@@ -254,7 +254,7 @@ buildscript {
         maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
-        classpath("com.dropbox.dependency-guard:dependency-guard:0.4.3")
+        classpath("com.dropbox.dependency-guard:dependency-guard:0.5.0")
     }
 }
 ```
