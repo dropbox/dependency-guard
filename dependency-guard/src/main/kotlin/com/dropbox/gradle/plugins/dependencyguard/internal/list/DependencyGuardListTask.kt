@@ -22,12 +22,15 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import javax.inject.Inject
 
 internal abstract class DependencyGuardListTask : DefaultTask() {
 
@@ -87,13 +90,13 @@ internal abstract class DependencyGuardListTask : DefaultTask() {
             when (val diff = writeListReport(dependencyGuardConfig, report)) {
                 is HasDiff -> {
                     // Print to console in color
-                    println(diff.createDiffMessage(withColor = true))
+                    logger.error(diff.createDiffMessage(withColor = true))
 
                     // Add to exception message without color
                     exceptionMessage.appendLine(diff.createDiffMessage(withColor = false))
                 }
-                is NoDiff -> println(diff.noDiffMessage)
-                is BaselineCreated -> println(diff.baselineCreatedMessage(withColor = true))
+                is NoDiff -> logger.debug(diff.noDiffMessage)
+                is BaselineCreated -> logger.lifecycle(diff.baselineCreatedMessage(withColor = true))
             }
         }
 

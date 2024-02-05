@@ -88,12 +88,12 @@ testing {
       useJUnitJupiter()
       dependencies {
         // gradleTest test suite depends on the production code in tests
-        implementation(project)
+        implementation(project())
         implementation(libs.truth)
       }
 
       targets {
-        all {
+        configureEach {
           testTask.configure {
             shouldRunAfter(test)
             dependsOn(deleteOldGradleTests)
