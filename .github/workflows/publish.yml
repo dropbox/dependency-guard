@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Gradle Wrapper Validation
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v6
 
       - name: Generate cache key
         run: .github/scripts/checksum.sh checksum.txt
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v6
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('checksum.txt') }}
@@ -27,7 +27,7 @@ jobs:
             ${{ runner.os }}-gradle
 
       - name: Install JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: 11
@@ -44,7 +44,7 @@ jobs:
 
       - name: (Fail-only) Upload the build report
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: error-report
           path: build-reports.zip
@@ -53,23 +53,42 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'dropbox/dependency-guard' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: [build]
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Install JDK 11
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: 11
 
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::521590706193:role/oidc-github-dropbox-dependency-guard-branch-main
+          aws-region: us-west-2
+
+      - name: Get Maven Central secrets from AWS Secrets Manager
+        uses: aws-actions/aws-secretsmanager-get-secrets@v3
+        with:
+          secret-ids: |
+            SONATYPE_USERNAME,sdk-release-maven-central-token-username
+            SONATYPE_PASSWORD,sdk-release-maven-central-token-password
+            SIGNING_KEY,sdk-release-signing-key
+            SIGNING_PASSWORD,sdk-release-signing-password
+          parse-json-secrets: false
+
       - name: Upload Snapshot
         run: ./gradlew -p dependency-guard clean publish --no-daemon --no-parallel --no-configuration-cache --stacktrace
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ env.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ env.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ env.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ env.SIGNING_PASSWORD }}
 
       - name: Retrieve Version
         run: echo "VERSION_NAME=$(./gradlew -q -p dependency-guard printVersionName)" >> $GITHUB_ENV
@@ -78,5 +97,5 @@ jobs:
         run: ./gradlew -p dependency-guard closeAndReleaseRepository --no-daemon --no-parallel
         if: success() && !endsWith(env.VERSION_NAME, '-SNAPSHOT')
         env:
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ env.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ env.SONATYPE_PASSWORD }}
